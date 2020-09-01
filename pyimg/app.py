@@ -1,6 +1,7 @@
 from tkinter import Menu, messagebox, ttk
 
 from pyimg.config.interface_info import InterfaceInfo
+from pyimg.menus.io_menu import ImageMenu
 
 
 class App:
@@ -10,7 +11,7 @@ class App:
         interface.configure()
         interface.load_frames()
         self.load_footer_buttons(interface)
-        # self.load_menu(root)
+        self.load_menu(root)
 
     def load_footer_buttons(self, interface):
         exit_program_btn = ttk.Button(
@@ -35,6 +36,11 @@ class App:
     def ask_quit(self, root):
         if messagebox.askokcancel("Quit", "Are you sure you want to quit?"):
             root.destroy()
+
+    def load_menu(self, root):
+        menubar = Menu(root)
+        root.config(menu=menubar)
+        ImageMenu(menubar=menubar)
 
 
 app = App()
