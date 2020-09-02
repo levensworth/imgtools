@@ -1,12 +1,11 @@
+import logging
 import os
 from pathlib import Path
 
-from PIL import Image
-
 import numpy as np
 import rawpy  # nt sure if we can use this library... but i don't see the point of not using it
+from PIL import Image
 
-import logging
 
 def load_raw_image(path: Path) -> np.ndarray:
     """
@@ -21,39 +20,39 @@ def load_raw_image(path: Path) -> np.ndarray:
 
 
 def convert_array_to_img(img_array: np.ndarray) -> Image:
-    '''
+    """
     Given the matrix representation of an image convert to Image object
     :param img_array: numpy matrix representation of an image.
     :return: PIL.Image instance
-    '''
+    """
     return Image.fromarray(img_array)
 
 
 def display_img(img: Image):
-    '''
+    """
     Given an Image instance, display result
     :param img: PIL.Image instance
     :return: None
-    '''
+    """
 
     img.show()
 
 
-def save_img(img: np.ndarray, path: str, format='jpeg') -> bool:
-    '''
+def save_img(img: np.ndarray, path: str, format="jpeg") -> bool:
+    """
     Given a matrix image representation save the image to the specified format
     :param img: np.ndarray matrix representation of an image
     :param path: string path to the desired final location
     :param format: image format to use (default is jpg)
     :return: True if all went smoothly
-    '''
+    """
 
     try:
         as_img = Image.fromarray(img)
         as_img.save(path, format)
         return True
     except Exception as e:
-        logging.error(f'Problem while saving image \n {e}')
+        logging.error(f"Problem while saving image \n {e}")
         return False
 
 
@@ -115,5 +114,3 @@ def get_image_info(line):
             image_info.append(value)
             count = count + 1
     return image_info
-
-

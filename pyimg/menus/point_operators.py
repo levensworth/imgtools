@@ -1,13 +1,15 @@
+import os
+from tkinter import Menu, messagebox, ttk
+
 from pyimg.config import constants as constants
 from pyimg.config.interface_info import InterfaceInfo
-from tkinter import Menu, ttk, messagebox
-import os
-from pyimg.modules.image_operators import *
 from pyimg.menus.io_menu import load_image
+from pyimg.modules.image_operators import *
 from pyimg.modules.imageio import convert_array_to_img, display_img, save_img
 
+
 def apply_op(a_image: np.ndarray, another_image: np.ndarray, op) -> np.ndarray:
-    '''
+    """
     Given 2 matrices (image representations) apply the supplied matrix operator.
     For consistency, op will receive a_image as first param and another_image as second.
 
@@ -16,9 +18,10 @@ def apply_op(a_image: np.ndarray, another_image: np.ndarray, op) -> np.ndarray:
     :param another_image: ndarray representing an image
     :param op: function operation to apply
     :return: np.ndarray result of applying the operator
-    '''
+    """
 
     return op(a_image, another_image)
+
 
 def load_left_image(interface):
     loaded_image = load_image(0, 0)
@@ -37,12 +40,19 @@ def generate_binary_operations_input(interface):
         interface.reset_parameters()
     else:
         interface.delete_widgets(interface.buttons_frame)
-    image_1_button = ttk.Button(interface.buttons_frame, text="Load Image 1",
-                                command=lambda: load_left_image(interface))
-    image_2_button = ttk.Button(interface.buttons_frame, text="Load Image 2",
-                                command=lambda: load_right_image(interface))
+    image_1_button = ttk.Button(
+        interface.buttons_frame,
+        text="Load Image 1",
+        command=lambda: load_left_image(interface),
+    )
+    image_2_button = ttk.Button(
+        interface.buttons_frame,
+        text="Load Image 2",
+        command=lambda: load_right_image(interface),
+    )
     image_1_button.grid(row=0, column=0)
     image_2_button.grid(row=0, column=1)
+
 
 def binary_operation_validator(image_1, image_2):
     if image_1 is None or image_2 is None:
@@ -54,10 +64,18 @@ def binary_operation_validator(image_1, image_2):
 def generate_add_operation_input():
     interface = InterfaceInfo.get_instance()
     generate_binary_operations_input(interface)
-    add_button = ttk.Button(interface.buttons_frame, text="Add",
-                            command=lambda: add_grey_image_wrapper(constants.WIDTH, constants.HEIGHT,
-                                                                   interface.left_image, constants.WIDTH,
-                                                                   constants.HEIGHT, interface.right_image))
+    add_button = ttk.Button(
+        interface.buttons_frame,
+        text="Add",
+        command=lambda: add_grey_image_wrapper(
+            constants.WIDTH,
+            constants.HEIGHT,
+            interface.left_image,
+            constants.WIDTH,
+            constants.HEIGHT,
+            interface.right_image,
+        ),
+    )
     add_button.grid(row=1, column=0)
 
 
@@ -69,11 +87,11 @@ def add_grey_image_wrapper(width_1, height_1, image_1, width_2, height_2, image_
         adjusted_img = linear_adjustment(result_img)
         img = convert_array_to_img(adjusted_img)
         display_img(img)
-        save_img(adjusted_img, os.path.join(constants.SAVE_PATH, 'added_img.jpg'))
+        save_img(adjusted_img, os.path.join(constants.SAVE_PATH, "added_img.jpg"))
     else:
-        messagebox.showerror(title="Error", message="You need to upload image 1 and 2 to add")
-
-
+        messagebox.showerror(
+            title="Error", message="You need to upload image 1 and 2 to add"
+        )
 
 
 class PointOperatorMenu:
