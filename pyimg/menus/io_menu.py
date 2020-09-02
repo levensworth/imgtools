@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from tkinter import Menu, filedialog, messagebox, ttk
 from tkinter.filedialog import asksaveasfilename
 
@@ -9,6 +10,7 @@ from PIL import Image, ImageTk
 from pyimg.config import constants as constants
 from pyimg.config.constants import IMG_EXTENSIONS
 from pyimg.config.interface_info import InterfaceInfo
+from pyimg.modules import image_io
 
 
 def open_file_name() -> str:
@@ -26,16 +28,13 @@ def open_file_name() -> str:
         return ""
 
 
-def load_image(row, column):
+def load_image():
     interface = InterfaceInfo.get_instance()
     file_name = open_file_name()
     if file_name:
         interface.current_image_name = file_name
         if file_name.endswith(".RAW"):
-            raw_image = load_image(file_name)
-            # image = Image.frombytes(
-            #     "L", (int(raw_image[1][0]), int(raw_image[1][1])), raw_image[0]
-            # )
+            raw_image = image_io.load_raw_image(Path(file_name))
             Image.fromarray(raw_image)
         else:
             # opens the image

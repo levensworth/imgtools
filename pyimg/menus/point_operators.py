@@ -1,3 +1,4 @@
+import math
 import os
 from tkinter import Entry, Menu, messagebox, ttk
 
@@ -5,7 +6,7 @@ from pyimg.config import constants as constants
 from pyimg.config.interface_info import InterfaceInfo
 from pyimg.menus.io_menu import load_image
 from pyimg.modules.image_operators import *
-from pyimg.modules.imageio import convert_array_to_img, display_img, save_img
+from pyimg.modules.image_io import convert_array_to_img, display_img, save_img
 
 
 def apply_op(a_image: np.ndarray, another_image: np.ndarray, op) -> np.ndarray:
@@ -23,14 +24,28 @@ def apply_op(a_image: np.ndarray, another_image: np.ndarray, op) -> np.ndarray:
     return op(a_image, another_image)
 
 
+def apply_unary_op(a_image: np.ndarray, op) -> np.ndarray:
+    """
+    Given 1 matrix (image representations) apply the supplied matrix operator.
+    For consistency, op will receive a_image as first param and another_image as second.
+
+
+    :param a_image: ndarray representing an image
+    :param op: function operation to apply
+    :return: np.ndarray result of applying the operator
+    """
+
+    return op(a_image)
+
+
 def load_left_image(interface):
-    loaded_image = load_image(0, 0)
+    loaded_image = load_image()
     if loaded_image is not None:
         interface.left_image = loaded_image
 
 
 def load_right_image(interface):
-    loaded_image = load_image(0, 1)
+    loaded_image = load_image()
     if loaded_image is not None:
         interface.right_image = loaded_image
 
@@ -54,6 +69,19 @@ def generate_binary_operations_input(interface):
     image_2_button.grid(row=0, column=1)
 
 
+def generate_unary_operations_input(interface):
+    if interface.current_image is not None or interface.image_to_copy is not None:
+        interface.reset_parameters()
+    else:
+        interface.delete_widgets(interface.buttons_frame)
+    image_button = ttk.Button(
+        interface.buttons_frame,
+        text="Load Image",
+        command=lambda: load_left_image(interface),
+    )
+    image_button.grid(row=0, column=0)
+
+
 def binary_operation_validator(image_1, image_2):
     if image_1 is None or image_2 is None:
         return False
@@ -75,6 +103,19 @@ def generate_add_operation_input():
     add_button.grid(row=1, column=0)
 
 
+def generate_compress_operation_input():
+    interface = InterfaceInfo.get_instance()
+    generate_unary_operations_input(interface)
+    add_button = ttk.Button(
+        interface.buttons_frame,
+        text="CDR",
+        command=lambda: dynamic_compression_image_wrapper(
+            interface.left_image,
+        ),
+    )
+    add_button.grid(row=1, column=0)
+
+
 def add_image_wrapper(image_1, image_2):
     if binary_operation_validator(image_1, image_2):
         image_1, image_2 = order_img_by_size(
@@ -90,6 +131,17 @@ def add_image_wrapper(image_1, image_2):
         messagebox.showerror(
             title="Error", message="You need to upload image 1 and 2 to add"
         )
+
+
+def dynamic_compression_image_wrapper(image):
+    img_array = np.array(image).astype(float)
+    c = (constants.MAX_PIXEL_VALUE - 1) / math.log10(1 + np.amax(img_array))
+    result_img = apply_unary_op(img_array, lambda x: c * np.log10(1 + x))
+    adjusted_img = linear_adjustment(result_img)
+
+    img = convert_array_to_img(adjusted_img)
+    display_img(img)
+    save_img(adjusted_img, os.path.join(constants.SAVE_PATH + "compressed_image.ppm"))
 
 
 def generate_dif_operation_input():
@@ -190,3 +242,4 @@ class PointOperatorMenu:
         # negative_menu.add_command(label="Grey Negative", command=lambda:
         #                           grey_negative_wrapper(interface.current_image, constants.WIDTH, constants.HEIGHT))
         #
+        operation_menu.add_command(label="CRD", command=generate_compress_operation_input)
