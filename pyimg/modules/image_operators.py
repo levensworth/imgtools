@@ -84,7 +84,7 @@ def linear_adjustment(a_img: np.ndarray) -> np.ndarray:
 
     if MAX_PIXEL_VALUE >= max_value and MIN_PIXEL_VALUE <= min_value:
         # values are in range
-        return a_img
+        return np.uint8(a_img)  # pixels should be ints no floats
     # if values are out of range, adjust based on current values
 
     if max_value == min_value:
@@ -105,4 +105,4 @@ def linear_adjustment(a_img: np.ndarray) -> np.ndarray:
         constant = MIN_PIXEL_VALUE - slope * min_value
 
     a_img = a_img * slope + constant
-    return a_img.astype(int)  # pixels should be ints no floats
+    return np.uint8(a_img)  # pixels should be ints no floats

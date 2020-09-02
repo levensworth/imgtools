@@ -1,5 +1,5 @@
 import os
-from tkinter import Menu, messagebox, ttk
+from tkinter import Entry, Menu, messagebox, ttk
 
 from pyimg.config import constants as constants
 from pyimg.config.interface_info import InterfaceInfo
@@ -67,21 +67,19 @@ def generate_add_operation_input():
     add_button = ttk.Button(
         interface.buttons_frame,
         text="Add",
-        command=lambda: add_grey_image_wrapper(
-            constants.WIDTH,
-            constants.HEIGHT,
+        command=lambda: add_image_wrapper(
             interface.left_image,
-            constants.WIDTH,
-            constants.HEIGHT,
             interface.right_image,
         ),
     )
     add_button.grid(row=1, column=0)
 
 
-def add_grey_image_wrapper(width_1, height_1, image_1, width_2, height_2, image_2):
+def add_image_wrapper(image_1, image_2):
     if binary_operation_validator(image_1, image_2):
-        image_1, image_2 = order_img_by_size(np.array(image_1), np.array(image_2))
+        image_1, image_2 = order_img_by_size(
+            np.array(image_1).astype(float), np.array(image_2).astype(float)
+        )
         result_img = apply_op(image_1, image_2, lambda x, y: x + y)
         # bring values to pixel range
         adjusted_img = linear_adjustment(result_img)
@@ -92,6 +90,71 @@ def add_grey_image_wrapper(width_1, height_1, image_1, width_2, height_2, image_
         messagebox.showerror(
             title="Error", message="You need to upload image 1 and 2 to add"
         )
+
+
+def generate_dif_operation_input():
+    interface = InterfaceInfo.get_instance()
+    generate_binary_operations_input(interface)
+    add_button = ttk.Button(
+        interface.buttons_frame,
+        text="Dif",
+        command=lambda: dif_image_wrapper(
+            interface.left_image,
+            interface.right_image,
+        ),
+    )
+    add_button.grid(row=1, column=0)
+
+
+def dif_image_wrapper(image_1, image_2):
+    if binary_operation_validator(image_1, image_2):
+
+        image_1 = np.array(image_1).astype(float)
+        image_2 = np.array(image_2).astype(float)
+
+        result_img = apply_op(image_1, image_2, lambda x, y: x - y)
+        # bring values to pixel range
+        adjusted_img = linear_adjustment(result_img)
+        img = convert_array_to_img(adjusted_img)
+        display_img(img)
+        save_img(adjusted_img, os.path.join(constants.SAVE_PATH, "subtract_img.jpg"))
+    else:
+        messagebox.showerror(
+            title="Error", message="You need to upload image 1 and 2 to subtract"
+        )
+
+
+def generate_scalar_multiplication():
+    interface = InterfaceInfo.get_instance()
+    interface.reset_parameters()
+    load_image_button = ttk.Button(
+        interface.buttons_frame,
+        text="Load Image",
+        command=lambda: load_left_image(interface),
+    )
+    load_image_button.grid(row=0, column=0)
+    ttk.Label(
+        interface.buttons_frame, text="Scalar", background=constants.TOP_COLOR
+    ).grid(row=1, column=0)
+    scalar = Entry(interface.buttons_frame)
+    scalar.grid(row=1, column=1)
+    multiply_button = ttk.Button(
+        interface.buttons_frame,
+        text="Multiply",
+        command=lambda: mul_img_wrapper(interface.left_image, scalar.get()),
+    )
+    multiply_button.grid(row=2, column=0)
+
+
+def mul_img_wrapper(image_1, scalar):
+    image_1 = np.array(image_1).astype(float)
+
+    result_img = image_1.dot(float(scalar))
+    # bring values to pixel range
+    adjusted_img = linear_adjustment(result_img)
+    img = convert_array_to_img(adjusted_img)
+    display_img(img)
+    save_img(adjusted_img, os.path.join(constants.SAVE_PATH, "stretch_img.jpg"))
 
 
 class PointOperatorMenu:
@@ -108,7 +171,12 @@ class PointOperatorMenu:
         operation_menu.add_command(label="Add", command=generate_add_operation_input)
         # subtract_menu = Menu(operation_menu, tearoff=0)
         # operation_menu.add_cascade(label="Subtract", menu=subtract_menu)
-        # subtract_menu.add_command(label="Color", command=generate_subtract_colored_operation_input)
+        operation_menu.add_command(
+            label="Subtract", command=generate_dif_operation_input
+        )
+        operation_menu.add_command(
+            label="Multiply", command=generate_scalar_multiplication
+        )
         # subtract_menu.add_command(label="B&W", command=generate_subtract_grey_operation_input)
         # multiply_menu = Menu(operation_menu, tearoff=0)
         # operation_menu.add_cascade(label="Multiply", menu=multiply_menu)

@@ -34,7 +34,6 @@ def display_img(img: Image):
     :param img: PIL.Image instance
     :return: None
     """
-
     img.show()
 
 
@@ -46,6 +45,11 @@ def save_img(img: np.ndarray, path: str, format="jpeg") -> bool:
     :param format: image format to use (default is jpg)
     :return: True if all went smoothly
     """
+    # generate path
+    try:
+        os.makedirs(os.path.dirname(path))
+    except FileExistsError:
+        pass
 
     try:
         as_img = Image.fromarray(img)
@@ -56,7 +60,7 @@ def save_img(img: np.ndarray, path: str, format="jpeg") -> bool:
         return False
 
 
-# TBD: deprecate this manual functions to laod an image
+# TBD: deprecate this manual functions to load an image
 
 
 def read_raw_image(path: Path):
