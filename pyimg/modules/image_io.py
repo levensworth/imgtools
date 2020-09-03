@@ -15,7 +15,7 @@ def load_raw_image(path: Path) -> np.ndarray:
     :return: np.ndarray
     """
 
-    raw = rawpy.imread(path)
+    raw = rawpy.imread(str(path))
     return raw.raw_image
 
 

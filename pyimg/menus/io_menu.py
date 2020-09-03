@@ -57,7 +57,7 @@ def load_image_wrapper():
     interface = InterfaceInfo.get_instance()
     interface.remove_images()
     if interface.current_image is None:
-        interface.current_image = load_image(0, 0)
+        interface.current_image = load_image()
         # harris_method(interface.current_image, constants.HEIGHT, constants.WIDTH, 0.8)
         # sift_method(interface.current_image, constants.HEIGHT, constants.WIDTH)
         # compare_images(interface.current_image, constants.HEIGHT, constants.WIDTH, interface.current_image, constants.HEIGHT, constants.WIDTH, 400)
