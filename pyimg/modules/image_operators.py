@@ -52,6 +52,17 @@ def gamma_fun(a_img: np.ndarray, gamma: float) -> np.ndarray:
 
     return img.dot(c ** (1 - gamma))
 
+def negative_img_fun(a_img: np.ndarray) -> np.ndarray:
+    '''
+    Given an image matrix representation, invert pixel values.
+    Following the function:
+    F: PixelDomain -> PixelDomain/
+    F(r) = -r + Max_Pixel_value
+    :param a_img: matrix image representation
+    :return: transformed matrix
+    '''
+
+    return (-1) * a_img  + MAX_PIXEL_VALUE
 
 
 def order_img_by_size(a_img: np.ndarray, another_img: np.ndarray) -> [np.ndarray]:
