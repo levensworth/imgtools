@@ -209,6 +209,39 @@ def mul_img_wrapper(image_1, scalar):
     save_img(adjusted_img, os.path.join(constants.SAVE_PATH, "stretch_img.jpg"))
 
 
+def generate_gamma_operation():
+    interface = InterfaceInfo.get_instance()
+    interface.reset_parameters()
+    load_image_button = ttk.Button(
+        interface.buttons_frame,
+        text="Load Image",
+        command=lambda: load_left_image(interface),
+    )
+    load_image_button.grid(row=0, column=0)
+    ttk.Label(
+        interface.buttons_frame, text="Scalar", background=constants.TOP_COLOR
+    ).grid(row=1, column=0)
+    scalar = Entry(interface.buttons_frame)
+    scalar.grid(row=1, column=1)
+    multiply_button = ttk.Button(
+        interface.buttons_frame,
+        text="Multiply",
+        command=lambda: gamma_img_wrapper(interface.left_image, scalar.get()),
+    )
+    multiply_button.grid(row=2, column=0)
+
+
+def gamma_img_wrapper(a_img, c_value):
+    a_img = np.array(a_img).astype(float)
+
+    result_img = gamma_fun(a_img, float(c_value))
+    # bring values to pixel range
+    adjusted_img = linear_adjustment(result_img)
+    img = convert_array_to_img(adjusted_img)
+    display_img(img)
+    save_img(adjusted_img, os.path.join(constants.SAVE_PATH, "gamma_img.jpg"))
+
+
 class PointOperatorMenu:
     """
     This class is a simple wrapper around tkinter menu object.
@@ -228,6 +261,9 @@ class PointOperatorMenu:
         )
         operation_menu.add_command(
             label="Multiply", command=generate_scalar_multiplication
+        )
+        operation_menu.add_command(
+            label="gamma", command=generate_gamma_operation
         )
         # subtract_menu.add_command(label="B&W", command=generate_subtract_grey_operation_input)
         # multiply_menu = Menu(operation_menu, tearoff=0)

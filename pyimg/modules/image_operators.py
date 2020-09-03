@@ -37,6 +37,22 @@ def img_dif(a_img: np.ndarray, another_img: np.ndarray) -> np.ndarray:
 
     return img_sum(a_img, -1 * another_img)
 
+def gamma_fun(a_img: np.ndarray, gamma: float) -> np.ndarray:
+    '''
+    Given a matrix image representation, apply gamma filter
+    :param a_img: image matrix representation
+    :param gamma: gamma value, should be positive value
+    :return: image matrix after filter transformation
+    '''
+    # remember T(img) = C^(1 - gamma) * img ^ (gamma)
+    # calculate C value
+    c = MAX_PIXEL_VALUE
+    # element wise power function
+    img = np.power(a_img, gamma)
+
+    return img.dot(c ** (1 - gamma))
+
+
 
 def order_img_by_size(a_img: np.ndarray, another_img: np.ndarray) -> [np.ndarray]:
     """
