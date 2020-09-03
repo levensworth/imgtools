@@ -1,4 +1,5 @@
 # Image Tools
+[![codecov](https://codecov.io/gh/santiagobassani96/imgtools/branch/master/graph/badge.svg)](https://codecov.io/gh/santiagobassani96/imgtools)
 ### Yet another image processing toolkit
 This toolkit is design as part of ITBA ATI course.
 

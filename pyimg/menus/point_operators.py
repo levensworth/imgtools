@@ -5,8 +5,8 @@ from tkinter import Entry, Menu, messagebox, ttk
 from pyimg.config import constants as constants
 from pyimg.config.interface_info import InterfaceInfo
 from pyimg.menus.io_menu import load_image
-from pyimg.modules.image_operators import *
 from pyimg.modules.image_io import convert_array_to_img, display_img, save_img
+from pyimg.modules.image_operators import *
 
 
 def apply_op(a_image: np.ndarray, another_image: np.ndarray, op) -> np.ndarray:
@@ -242,6 +242,32 @@ def gamma_img_wrapper(a_img, c_value):
     save_img(adjusted_img, os.path.join(constants.SAVE_PATH, "gamma_img.jpg"))
 
 
+def generate_negative():
+    interface = InterfaceInfo.get_instance()
+    interface.reset_parameters()
+    load_image_button = ttk.Button(
+        interface.buttons_frame,
+        text="Load Image",
+        command=lambda: load_left_image(interface),
+    )
+    load_image_button.grid(row=0, column=0)
+
+    negative_button = ttk.Button(
+        interface.buttons_frame,
+        text="Negative",
+        command=lambda: negative_img_wrapper(interface.left_image),
+    )
+    negative_button.grid(row=2, column=0)
+
+
+def negative_img_wrapper(a_img):
+    negative = negative_img_fun(np.array(a_img))
+    adjusted = linear_adjustment(negative)
+    img = convert_array_to_img(adjusted)
+    display_img(img)
+    save_img(adjusted, os.path.join(constants.SAVE_PATH, "negative_img.jpg"))
+
+
 class PointOperatorMenu:
     """
     This class is a simple wrapper around tkinter menu object.
@@ -253,18 +279,29 @@ class PointOperatorMenu:
         operation_menu = Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Operations", menu=operation_menu)
 
-        operation_menu.add_command(label="Add", command=generate_add_operation_input)
-        # subtract_menu = Menu(operation_menu, tearoff=0)
-        # operation_menu.add_cascade(label="Subtract", menu=subtract_menu)
-        operation_menu.add_command(
+        binary_operators_menu = Menu(operation_menu, tearoff=0)
+        operation_menu.add_cascade(label="Binary operators", menu=binary_operators_menu)
+
+        binary_operators_menu.add_command(
+            label="Add", command=generate_add_operation_input
+        )
+
+        binary_operators_menu.add_command(
             label="Subtract", command=generate_dif_operation_input
         )
-        operation_menu.add_command(
+
+        single_img_menu = Menu(operation_menu, tearoff=0)
+        operation_menu.add_cascade(label="Mono operators", menu=single_img_menu)
+
+        single_img_menu.add_command(
+            label="CRD", command=generate_compress_operation_input
+        )
+
+        single_img_menu.add_command(
             label="Multiply", command=generate_scalar_multiplication
         )
-        operation_menu.add_command(
-            label="gamma", command=generate_gamma_operation
-        )
+        single_img_menu.add_command(label="gamma", command=generate_gamma_operation)
+        single_img_menu.add_command(label="negative", command=generate_negative)
         # subtract_menu.add_command(label="B&W", command=generate_subtract_grey_operation_input)
         # multiply_menu = Menu(operation_menu, tearoff=0)
         # operation_menu.add_cascade(label="Multiply", menu=multiply_menu)
@@ -278,4 +315,3 @@ class PointOperatorMenu:
         # negative_menu.add_command(label="Grey Negative", command=lambda:
         #                           grey_negative_wrapper(interface.current_image, constants.WIDTH, constants.HEIGHT))
         #
-        operation_menu.add_command(label="CRD", command=generate_compress_operation_input)
