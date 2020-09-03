@@ -79,7 +79,7 @@ def _equalize_single_scale(a_img: np.ndarray) -> np.ndarray:
             indices = np.argwhere(a_img == i)
             new_grey_value += len(indices) / total_pixels
 
-        # new_grey is a value in range [0, 1) , we transfrom it to [0, max pixel val]
+        # new_grey is a value in range [0, 1) , we transform it to [0, max pixel val]
         new_grey_value = int(
             new_grey_value * (local_max_pixel_value - local_min_pixel_value)
             + local_min_pixel_value
