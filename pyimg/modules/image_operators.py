@@ -3,39 +3,6 @@ import numpy as np
 from pyimg.config.constants import MAX_PIXEL_VALUE, MIN_PIXEL_VALUE
 
 
-def img_sum(a_img: np.ndarray, another_img: np.ndarray) -> np.ndarray:
-    """
-    Given 2 images apply matrix sum. Both matrices should be of same size
-    :param a_img: ndarray of shape (..)
-    :param another_img: ndarray of same shape as first param
-    :return: np.ndarray of same shape
-    """
-
-    return a_img + another_img
-
-
-def img_mul(a_img: np.ndarray, another_img: np.ndarray) -> np.ndarray:
-    """
-    Given 2 image matrices apply matrix multiplication (dot product).
-    This method expects 2d arrays.
-    Future implementations may support higher dimensions.
-    :param a_img: ndarray of shape (n, m)
-    :param another_img: ndarray of shape (m, s)
-    :return: ndarray of shape (n, s)
-    """
-
-    return np.matmul(a_img, another_img)
-
-
-def img_dif(a_img: np.ndarray, another_img: np.ndarray) -> np.ndarray:
-    """
-    Given 2 images apply matrix dif. Both matrices should be of same size
-    :param a_img: ndarray of shape (..)
-    :param another_img: ndarray of same shape as first param
-    :return: np.ndarray of same shape
-    """
-
-    return img_sum(a_img, -1 * another_img)
 
 
 def gamma_fun(a_img: np.ndarray, gamma: float) -> np.ndarray:
@@ -67,37 +34,66 @@ def negative_img_fun(a_img: np.ndarray) -> np.ndarray:
     return (-1) * a_img + MAX_PIXEL_VALUE
 
 
-def order_img_by_size(a_img: np.ndarray, another_img: np.ndarray) -> [np.ndarray]:
-    """
-    Given 2 arrays, return them in order of size. If none of them fit inside the other,
-    raise ArithmeticError
-    :param a_img: ndarray of shape (..)
-    :param another_img: ndarray of  shape (..)
-    :return: list of matrices order by size
+def histogram_equalization(a_img: np.ndarray) -> np.ndarray:
+    '''
+    Given a matrix representation of an image, apply histogram equalization as given by:
 
-    :raise ArithmeticError
-    """
-    shape_1 = a_img.shape
-    shape_2 = another_img.shape
+    T(Rk) = sum from 0 to k of Nj/N
+    where:
+        - Rk: k-th grey value in the scale from o - max pixel value
+        - Nj: number of pixel with j-th grey value in the matrix
+        - N: total number of pixels.
+    :param a_img: image matrix representation
+    :return: transformed matrix
+    '''
 
-    # this problem reduces to finding the vector whose values are equal or greater in each index
-
-    a_img_is_greater = True
-    another_img_is_greater = True
-    for x1, x2 in zip(shape_1, shape_2):
-        if x1 < x2:
-            a_img_is_greater = False
-        # notice we don't use else cause of the x1 == x2 clause
-        if x1 > x2:
-            another_img_is_greater = False
-
-    # check if indeed it was greater
-    if a_img_is_greater:
-        return [a_img, another_img]
-    elif another_img_is_greater:
-        return [another_img, a_img]
+    if len(a_img.shape) == 3:
+        for i in range(len(a_img.shape)):
+            a_img[:, :, i] = _equalize_single_scale(a_img[:, :, i])
+    elif len(a_img.shape) == 2:
+        a_img = _equalize_single_scale(a_img)
     else:
-        raise ArithmeticError("Images can't fit together")
+        raise ArithmeticError('matrix with shape {} can\'t be processed'.format(a_img.shape))
+
+    return a_img
+
+
+def _equalize_single_scale(a_img: np.ndarray) -> np.ndarray:
+    '''
+    Given a matrix representation of pixel values with shape (n,m)
+    apply histogram equalization
+    :param a_matrix: pixel matrix of shape (n, m)
+    :return: transformed matrix
+    '''
+
+    local_max_pixel_value = a_img.max()
+    local_min_pixel_value = a_img.min()
+
+    total_pixels = np.count_nonzero(a_img > 0)
+    # for each value in the pixel scale equalize matrix
+    for grey_value in range(MAX_PIXEL_VALUE):
+        # TODO: this is too slow!
+        new_grey_value = 0
+        for i in range(grey_value):
+            # to calculate new grey iterate over all prev values
+            indices = np.argwhere(a_img == i)
+            new_grey_value += len(indices) / total_pixels
+
+        # new_grey is a value in range [0, 1) , we transfrom it to [0, max pixel val]
+        new_grey_value = int( new_grey_value * (local_max_pixel_value - local_min_pixel_value) + local_min_pixel_value)
+
+
+        # get indeces of all pixels with specified grey value
+        # https://stackoverflow.com/questions/4588628/find-indices-of-elements-equal-to-zero-in-a-numpy-array
+        indices = np.argwhere(a_img == grey_value)
+
+        # transform those values with new grey val
+        for y, x in indices:
+            a_img[y, x] = new_grey_value
+
+    return a_img
+
+
 
 
 def linear_adjustment(a_img: np.ndarray) -> np.ndarray:

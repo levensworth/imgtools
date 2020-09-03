@@ -7,6 +7,7 @@ from pyimg.config.interface_info import InterfaceInfo
 from pyimg.menus.io_menu import load_image
 from pyimg.modules.image_io import convert_array_to_img, display_img, save_img
 from pyimg.modules.image_operators import *
+from pyimg.modules.image_binary_operators import *
 
 
 def apply_op(a_image: np.ndarray, another_image: np.ndarray, op) -> np.ndarray:
@@ -268,6 +269,27 @@ def negative_img_wrapper(a_img):
     save_img(adjusted, os.path.join(constants.SAVE_PATH, "negative_img.jpg"))
 
 
+def generate_equalized_image_input():
+    interface = InterfaceInfo.get_instance()
+    generate_unary_operations_input(interface)
+    add_button = ttk.Button(
+        interface.buttons_frame,
+        text="EQ",
+        command=lambda: equalize_image_wrapper(
+            interface.left_image,
+        ),
+    )
+    add_button.grid(row=1, column=0)
+
+
+def equalize_image_wrapper(a_img):
+    equalized = histogram_equalization(np.array(a_img))
+    adjusted = linear_adjustment(equalized)
+    img = convert_array_to_img(adjusted)
+    display_img(img)
+    save_img(adjusted, os.path.join(constants.SAVE_PATH, "equalized_img.jpg"))
+
+
 class PointOperatorMenu:
     """
     This class is a simple wrapper around tkinter menu object.
@@ -302,6 +324,7 @@ class PointOperatorMenu:
         )
         single_img_menu.add_command(label="gamma", command=generate_gamma_operation)
         single_img_menu.add_command(label="negative", command=generate_negative)
+        single_img_menu.add_command(label="equalize histogram", command=generate_equalized_image_input)
         # subtract_menu.add_command(label="B&W", command=generate_subtract_grey_operation_input)
         # multiply_menu = Menu(operation_menu, tearoff=0)
         # operation_menu.add_cascade(label="Multiply", menu=multiply_menu)
