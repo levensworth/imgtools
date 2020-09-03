@@ -291,7 +291,7 @@ class PointOperatorMenu:
         )
 
         single_img_menu = Menu(operation_menu, tearoff=0)
-        operation_menu.add_cascade(label="Mono operators", menu=single_img_menu)
+        operation_menu.add_cascade(label="Single operators", menu=single_img_menu)
 
         single_img_menu.add_command(
             label="CRD", command=generate_compress_operation_input
