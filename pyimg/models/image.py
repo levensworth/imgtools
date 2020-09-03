@@ -5,7 +5,6 @@ from pyimg.models import Matrix
 
 
 class ImageImpl(Matrix):
-
     def __init__(self, image: Image):
         super(ImageImpl, self).__init__(image)
         self.w = self.array.shape[0]

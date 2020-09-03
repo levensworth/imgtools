@@ -5,9 +5,9 @@ from tkinter import Entry, Menu, messagebox, ttk
 from pyimg.config import constants as constants
 from pyimg.config.interface_info import InterfaceInfo
 from pyimg.menus.io_menu import load_image
+from pyimg.modules.image_binary_operators import *
 from pyimg.modules.image_io import convert_array_to_img, display_img, save_img
 from pyimg.modules.image_operators import *
-from pyimg.modules.image_binary_operators import *
 
 
 def apply_op(a_image: np.ndarray, another_image: np.ndarray, op) -> np.ndarray:
@@ -324,7 +324,9 @@ class PointOperatorMenu:
         )
         single_img_menu.add_command(label="gamma", command=generate_gamma_operation)
         single_img_menu.add_command(label="negative", command=generate_negative)
-        single_img_menu.add_command(label="equalize histogram", command=generate_equalized_image_input)
+        single_img_menu.add_command(
+            label="equalize histogram", command=generate_equalized_image_input
+        )
         # subtract_menu.add_command(label="B&W", command=generate_subtract_grey_operation_input)
         # multiply_menu = Menu(operation_menu, tearoff=0)
         # operation_menu.add_cascade(label="Multiply", menu=multiply_menu)

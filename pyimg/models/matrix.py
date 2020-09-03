@@ -2,7 +2,6 @@ import numpy as np
 
 
 class Matrix:
-
     def __init__(self, array):
         self.array = np.array(array).astype(float)
 

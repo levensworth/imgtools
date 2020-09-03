@@ -3,8 +3,6 @@ import numpy as np
 from pyimg.config.constants import MAX_PIXEL_VALUE, MIN_PIXEL_VALUE
 
 
-
-
 def gamma_fun(a_img: np.ndarray, gamma: float) -> np.ndarray:
     """
     Given a matrix image representation, apply gamma filter
@@ -35,7 +33,7 @@ def negative_img_fun(a_img: np.ndarray) -> np.ndarray:
 
 
 def histogram_equalization(a_img: np.ndarray) -> np.ndarray:
-    '''
+    """
     Given a matrix representation of an image, apply histogram equalization as given by:
 
     T(Rk) = sum from 0 to k of Nj/N
@@ -45,7 +43,7 @@ def histogram_equalization(a_img: np.ndarray) -> np.ndarray:
         - N: total number of pixels.
     :param a_img: image matrix representation
     :return: transformed matrix
-    '''
+    """
 
     if len(a_img.shape) == 3:
         for i in range(len(a_img.shape)):
@@ -53,18 +51,20 @@ def histogram_equalization(a_img: np.ndarray) -> np.ndarray:
     elif len(a_img.shape) == 2:
         a_img = _equalize_single_scale(a_img)
     else:
-        raise ArithmeticError('matrix with shape {} can\'t be processed'.format(a_img.shape))
+        raise ArithmeticError(
+            "matrix with shape {} can't be processed".format(a_img.shape)
+        )
 
     return a_img
 
 
 def _equalize_single_scale(a_img: np.ndarray) -> np.ndarray:
-    '''
+    """
     Given a matrix representation of pixel values with shape (n,m)
     apply histogram equalization
     :param a_matrix: pixel matrix of shape (n, m)
     :return: transformed matrix
-    '''
+    """
 
     local_max_pixel_value = a_img.max()
     local_min_pixel_value = a_img.min()
@@ -80,8 +80,10 @@ def _equalize_single_scale(a_img: np.ndarray) -> np.ndarray:
             new_grey_value += len(indices) / total_pixels
 
         # new_grey is a value in range [0, 1) , we transfrom it to [0, max pixel val]
-        new_grey_value = int( new_grey_value * (local_max_pixel_value - local_min_pixel_value) + local_min_pixel_value)
-
+        new_grey_value = int(
+            new_grey_value * (local_max_pixel_value - local_min_pixel_value)
+            + local_min_pixel_value
+        )
 
         # get indeces of all pixels with specified grey value
         # https://stackoverflow.com/questions/4588628/find-indices-of-elements-equal-to-zero-in-a-numpy-array
@@ -92,8 +94,6 @@ def _equalize_single_scale(a_img: np.ndarray) -> np.ndarray:
             a_img[y, x] = new_grey_value
 
     return a_img
-
-
 
 
 def linear_adjustment(a_img: np.ndarray) -> np.ndarray:
