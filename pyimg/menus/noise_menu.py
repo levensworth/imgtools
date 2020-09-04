@@ -4,7 +4,7 @@ from tkinter import Menu, messagebox
 
 from pyimg.config import constants
 from pyimg.menus.io_menu import ImageIO
-from pyimg.menus.operation_interface import UnaryWithParamsImageOperation
+from pyimg.menus.operation_interface import UnaryWithParamsImageOperation, UnaryImageOperation
 from pyimg.models.image import ImageImpl, noise, operators
 from pyimg.models.random_number.generator import Generator, GaussianGenerator, RayleighGenerator, ExponentialGenerator
 from pyimg.modules.image_io import display_img, save_img
@@ -41,6 +41,22 @@ def noise_image_wrapper(image: ImageImpl, generator: Generator, **kwargs):
         )
 
 
+def salt_peper_image_wrapper(image: ImageImpl, **kwargs):
+    p0 = kwargs['p0']
+    p1 = kwargs.pop('p1', None)
+    if 0.0 <= p0 <= 1.0 and (p1 is None or 0.0 <= p1 <= 1.0):
+        salt_img = noise.salt_and_pepper_apply(image, p0, p1)
+        adjusted_img = operators.linear_adjustment(salt_img)
+        img = adjusted_img.convert_to_pil()
+        display_img(img)
+        save_img(img, os.path.join(constants.SAVE_PATH, 'result_img ' + str(datetime.datetime.now()) + '.jpg'))
+
+    else:
+        messagebox.showerror(
+            title="Error", message="p0 and p1 should be between 0 and 1."
+        )
+
+
 class NoiseImageMenu:
     """
     This class is a simple wrapper around tkinter menu object.
@@ -73,5 +89,13 @@ class NoiseImageMenu:
                                                           image, ExponentialGenerator(), **kwargs),
                                                       params=['threshold', 'alpha'],
                                                       bool_params=[('is additive', 'is_multiplicative')]
+                                                      ).generate_interface
+                               )
+        noise_menu.add_command(label="Salt and Pepper",
+                               command=NoiseOperation(image_io, 'Apply Salt and Pepper',
+                                                      lambda image, **kwargs: salt_peper_image_wrapper(
+                                                          image, **kwargs),
+                                                      params=['p0', 'p1'],
+                                                      bool_params=[]
                                                       ).generate_interface
                                )

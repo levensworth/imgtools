@@ -22,8 +22,9 @@ def apply_noise(image: ImageImpl, random_generator: Generator,
     return ImageImpl.from_array(result)
 
 
-def salt_and_pepper_noise_generator(image: ImageImpl, p0: float) -> ImageImpl:
-    p1 = 1 - p0
+def salt_and_pepper_apply(image: ImageImpl, p0: float, p1=None) -> ImageImpl:
+    if p1 is None:
+        p1 = 1 - p0
 
     mask = np.random.uniform(low=0.0, high=1.0, size=image.array.shape)
     mask_p0 = np.where(mask > p0, 1.0, 0.0)
