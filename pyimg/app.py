@@ -1,17 +1,20 @@
 from tkinter import Menu, messagebox, ttk
 
 from pyimg.config.interface_info import InterfaceInfo
+from pyimg.menus.filter_menu import FilterMenu
+from pyimg.menus.info_menu import InfoImageMenu
 from pyimg.menus.io_menu import ImageMenu
+from pyimg.menus.noise_menu import NoiseImageMenu
 from pyimg.menus.point_operators import PointOperatorMenu
 
 
 class App:
     def __init__(self):
-        interface = InterfaceInfo.get_instance()
-        root = interface.get_root()
-        interface.configure()
-        interface.load_frames()
-        self.load_footer_buttons(interface)
+        self.interface = InterfaceInfo.get_instance()
+        root = self.interface.get_root()
+        self.interface.configure()
+        self.interface.load_frames()
+        self.load_footer_buttons(self.interface)
         self.load_menu(root)
 
     def load_footer_buttons(self, interface):
@@ -30,7 +33,7 @@ class App:
         clean_window_btn = ttk.Button(
             interface.footer_frame,
             text="Clean image",
-            command=lambda: interface.delete_widgets(interface.image_frame),
+            command=interface.remove_images,
         )
         clean_window_btn.grid(column=2, row=0)
 
@@ -41,8 +44,11 @@ class App:
     def load_menu(self, root):
         menubar = Menu(root)
         root.config(menu=menubar)
-        ImageMenu(menubar=menubar)
-        PointOperatorMenu(menubar=menubar)
+        image_menu = ImageMenu(menubar=menubar, interface=self.interface)
+        InfoImageMenu(menubar=menubar, image_io=image_menu.image_io)
+        PointOperatorMenu(menubar=menubar, image_io=image_menu.image_io)
+        NoiseImageMenu(menubar=menubar, image_io=image_menu.image_io)
+        FilterMenu(menubar=menubar, image_io=image_menu.image_io)
 
 
 app = App()

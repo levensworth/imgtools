@@ -1,9 +1,12 @@
+import math
+
 import numpy as np
 
 from pyimg.config.constants import MAX_PIXEL_VALUE, MIN_PIXEL_VALUE
+from pyimg.models.image import ImageImpl
 
 
-def gamma_fun(a_img: np.ndarray, gamma: float) -> np.ndarray:
+def gamma_fun(a_img: ImageImpl, gamma: float) -> ImageImpl:
     """
     Given a matrix image representation, apply gamma filter
     :param a_img: image matrix representation
@@ -14,12 +17,11 @@ def gamma_fun(a_img: np.ndarray, gamma: float) -> np.ndarray:
     # calculate C value
     c = MAX_PIXEL_VALUE
     # element wise power function
-    img = np.power(a_img, gamma)
+    img = a_img.apply(lambda x: np.power(x, gamma))
+    return img.apply(lambda x: x.dot(c ** (1 - gamma)))
 
-    return img.dot(c ** (1 - gamma))
 
-
-def negative_img_fun(a_img: np.ndarray) -> np.ndarray:
+def negative_img_fun(a_img: ImageImpl) -> ImageImpl:
     """
     Given an image matrix representation, invert pixel values.
     Following the function:
@@ -29,10 +31,15 @@ def negative_img_fun(a_img: np.ndarray) -> np.ndarray:
     :return: transformed matrix
     """
 
-    return (-1) * a_img + MAX_PIXEL_VALUE
+    return a_img.mul_scalar(-1).add_scalar(MAX_PIXEL_VALUE)
 
 
-def histogram_equalization(a_img: np.ndarray) -> np.ndarray:
+def dynamic_compression_image(a_img):
+    c = (MAX_PIXEL_VALUE - 1) / math.log10(1 + a_img.max_value())
+    return a_img.add_scalar(1).apply(np.log10).mul_scalar(c)
+
+
+def histogram_equalization(a_img: ImageImpl) -> ImageImpl:
     """
     Given a matrix representation of an image, apply histogram equalization as given by:
 
@@ -45,20 +52,13 @@ def histogram_equalization(a_img: np.ndarray) -> np.ndarray:
     :return: transformed matrix
     """
 
-    if len(a_img.shape) == 3:
-        for i in range(len(a_img.shape)):
-            a_img[:, :, i] = _equalize_single_scale(a_img[:, :, i])
-    elif len(a_img.shape) == 2:
-        a_img = _equalize_single_scale(a_img)
-    else:
-        raise ArithmeticError(
-            "matrix with shape {} can't be processed".format(a_img.shape)
-        )
+    for i in range(a_img.channels):
+        a_img.array[:, :, i] = _equalize_single_scale(a_img.array[:, :, i])
 
     return a_img
 
 
-def _equalize_single_scale(a_img: np.ndarray) -> np.ndarray:
+def _equalize_single_scale(a_matrix: np.ndarray) -> np.ndarray:
     """
     Given a matrix representation of pixel values with shape (n,m)
     apply histogram equalization
@@ -66,17 +66,17 @@ def _equalize_single_scale(a_img: np.ndarray) -> np.ndarray:
     :return: transformed matrix
     """
 
-    local_max_pixel_value = a_img.max()
-    local_min_pixel_value = a_img.min()
+    local_max_pixel_value = np.amax(a_matrix)
+    local_min_pixel_value = np.amin(a_matrix)
 
-    total_pixels = np.count_nonzero(a_img > 0)
+    total_pixels = np.count_nonzero(a_matrix > 0)
     # for each value in the pixel scale equalize matrix
     for grey_value in range(MAX_PIXEL_VALUE):
         # TODO: this is too slow!
         new_grey_value = 0
         for i in range(grey_value):
             # to calculate new grey iterate over all prev values
-            indices = np.argwhere(a_img == i)
+            indices = np.argwhere(a_matrix == i)
             new_grey_value += len(indices) / total_pixels
 
         # new_grey is a value in range [0, 1) , we transform it to [0, max pixel val]
@@ -87,16 +87,16 @@ def _equalize_single_scale(a_img: np.ndarray) -> np.ndarray:
 
         # get indeces of all pixels with specified grey value
         # https://stackoverflow.com/questions/4588628/find-indices-of-elements-equal-to-zero-in-a-numpy-array
-        indices = np.argwhere(a_img == grey_value)
+        indices = np.argwhere(a_matrix == grey_value)
 
         # transform those values with new grey val
         for y, x in indices:
-            a_img[y, x] = new_grey_value
+            a_matrix[y, x] = new_grey_value
 
-    return a_img
+    return a_matrix
 
 
-def linear_adjustment(a_img: np.ndarray) -> np.ndarray:
+def linear_adjustment(a_img: ImageImpl) -> ImageImpl:
     """
     Given a matrix image representation apply, if necessary, linear transformation
     to bring values in the pixel value range (0, 255).
@@ -104,12 +104,12 @@ def linear_adjustment(a_img: np.ndarray) -> np.ndarray:
     :return: np.ndarray of same shape with values in range
     """
 
-    min_value = a_img.min()
-    max_value = a_img.max()
+    min_value = a_img.min_value()
+    max_value = a_img.max_value()
 
     if MAX_PIXEL_VALUE >= max_value and MIN_PIXEL_VALUE <= min_value:
         # values are in range
-        return np.uint8(np.round(a_img))  # pixels should be ints no floats
+        return a_img  # pixels should be ints no floats
     # if values are out of range, adjust based on current values
 
     if max_value == min_value:
@@ -129,5 +129,4 @@ def linear_adjustment(a_img: np.ndarray) -> np.ndarray:
         # we just solve y = mx + b for known x, y and m
         constant = MIN_PIXEL_VALUE - slope * min_value
 
-    a_img = a_img * slope + constant
-    return np.uint8(a_img)  # pixels should be ints no floats
+    return a_img.mul_scalar(slope).add_scalar(constant)

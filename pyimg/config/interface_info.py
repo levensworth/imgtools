@@ -12,11 +12,8 @@ class InterfaceInfo:
             raise Exception("This class is a singleton!")
         else:
             self.root = Tk()
-            self.current_image = None
-            self.current_image_name = None
-            self.image_to_copy = None
-            self.left_image = None
-            self.right_image = None
+            self.result_image = None
+            self.images = []
             self.buttons_frame = None
             self.image_frame = None
             self.footer_frame = None
@@ -69,22 +66,14 @@ class InterfaceInfo:
         self.footer_frame.pack(side=BOTTOM, expand=True, fill=BOTH)
 
     def clean_images(self):
-        self.current_image = None
-        self.current_image_name = None
-        self.left_image = None
-        self.right_image = None
+        self.result_image = None
+        self.images = []
 
     def generate_canvas(self):
         self.canvas = Canvas(
             self.image_frame, width=constants.WIDTH, heigh=constants.HEIGHT, bg="white"
         )
         self.canvas.pack(side="left")
-
-    def delete_widgets(self, frame):
-        for widget in frame.winfo_children():
-            widget.destroy()
-        if frame is self.image_frame:
-            self.clean_images()
 
     def get_canvas(self):
         return self.canvas
@@ -93,6 +82,14 @@ class InterfaceInfo:
         self.clean_images()
         self.delete_widgets(self.image_frame)
 
+    def remove_buttons(self):
+        self.delete_widgets(self.buttons_frame)
+
     def reset_parameters(self):
         self.remove_images()
         self.delete_widgets(self.buttons_frame)
+
+    @staticmethod
+    def delete_widgets(frame):
+        for widget in frame.winfo_children():
+            widget.destroy()
