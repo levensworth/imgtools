@@ -7,6 +7,8 @@ import numpy as np
 import rawpy  # nt sure if we can use this library... but i don't see the point of not using it
 from PIL import Image
 
+from pyimg.models.image import ImageImpl
+
 
 def load_raw_image(path: Path) -> np.ndarray:
     """
@@ -90,7 +92,7 @@ def display_img(img: Image):
     img.show()
 
 
-def save_img(img: np.ndarray, path: str, format="jpeg") -> bool:
+def save_img(img: Image, path: str, format="jpeg") -> bool:
     """
     Given a matrix image representation save the image to the specified format
     :param img: np.ndarray matrix representation of an image
@@ -105,8 +107,7 @@ def save_img(img: np.ndarray, path: str, format="jpeg") -> bool:
         pass
 
     try:
-        as_img = Image.fromarray(img)
-        as_img.save(path, format)
+        img.save(path, format)
         return True
     except Exception as e:
         logging.error(f"Problem while saving image \n {e}")

@@ -1,10 +1,9 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 
 import numpy as np
 
 
 class Generator(ABC):
-
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
@@ -15,25 +14,21 @@ class Generator(ABC):
 
 
 class GaussianGenerator(Generator):
-
     def generate(self):
         return gaussian_generator(*self.args, **self.kwargs)
 
 
 class RayleighGenerator(Generator):
-
     def generate(self):
         return rayleigh_generator(*self.args, **self.kwargs)
 
 
 class ExponentialGenerator(Generator):
-
     def generate(self):
         return exponential_generator(*self.args, **self.kwargs)
 
 
 class UniformGenerator(Generator):
-
     def generate(self):
         return uniform_generator(*self.args, **self.kwargs)
 

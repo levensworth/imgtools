@@ -17,7 +17,7 @@ class ImageIO:
         self.interface = interface
 
     def full_load_image(self):
-        file_name = self.choose_file_name('Select file')
+        file_name = self.choose_file_name("Select file")
         image = self.load_image(file_name)
 
         # PhotoImage class is used to add image to widgets, icons etc
@@ -40,7 +40,7 @@ class ImageIO:
             messagebox.showerror(title="Error", message="There is no image to save.")
         else:
             image = self.interface.result_image
-            image_name = self.choose_file_name('Save as')
+            image_name = self.choose_file_name("Save as")
             self.save_image(image, image_name)
 
     def reset(self):

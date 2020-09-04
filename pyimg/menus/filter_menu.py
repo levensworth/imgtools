@@ -5,7 +5,7 @@ from pyimg.config import constants
 from pyimg.menus.operation_interface import (BinaryImageOperation,
                                              UnaryImageOperation,
                                              UnaryWithParamsImageOperation)
-from pyimg.models.image import ImageImpl, operators
+from pyimg.models.image import ImageImpl, filters, operators
 from pyimg.modules.image_io import display_img, save_img
 
 
@@ -31,8 +31,52 @@ class FilterMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Mean",
-                lambda m1, kernel_size: linear_adj_image_wrapper(
-                    operators.mean_filter(m1, kernel_size)
+                lambda image, kernel_size: linear_adj_image_wrapper(
+                    filters.mean_filter(image, kernel_size)
+                ),
+                params=["kernel_size"],
+            ).generate_interface,
+        )
+        filter_menu.add_command(
+            label="Median Filter",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Median",
+                lambda image, kernel_size: linear_adj_image_wrapper(
+                    filters.median_filter(image, kernel_size)
+                ),
+                params=["kernel_size"],
+            ).generate_interface,
+        )
+        filter_menu.add_command(
+            label="Weighted Median Filter",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Median",
+                lambda image, kernel_size: linear_adj_image_wrapper(
+                    filters.weighted_median_filter(image, kernel_size)
+                ),
+                params=["kernel_size"],
+            ).generate_interface,
+        )
+        filter_menu.add_command(
+            label="Gaussian filter",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Gaussian",
+                lambda image, sigma, kernel_size: linear_adj_image_wrapper(
+                    filters.gaussian_filter(image, kernel_size, sigma)
+                ),
+                params=["sigma", "kernel_size"],
+            ).generate_interface,
+        )
+        filter_menu.add_command(
+            label="High Filter",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Median",
+                lambda image, kernel_size: linear_adj_image_wrapper(
+                    filters.high_filter(image, kernel_size)
                 ),
                 params=["kernel_size"],
             ).generate_interface,

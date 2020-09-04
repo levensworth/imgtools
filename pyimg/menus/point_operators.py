@@ -14,7 +14,12 @@ def linear_adj_image_wrapper(image: ImageImpl):
     adjusted_img = operators.linear_adjustment(image)
     img = adjusted_img.convert_to_pil()
     display_img(img)
-    save_img(img, os.path.join(constants.SAVE_PATH, 'result_img ' + str(datetime.datetime.now()) + '.jpg'))
+    save_img(
+        img,
+        os.path.join(
+            constants.SAVE_PATH, "result_img " + str(datetime.datetime.now()) + ".jpg"
+        ),
+    )
 
 
 class PointOperatorMenu:
@@ -87,7 +92,9 @@ class PointOperatorMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Gamma",
-                lambda image, c: linear_adj_image_wrapper(operators.gamma_fun(image, c)),
+                lambda image, c: linear_adj_image_wrapper(
+                    operators.gamma_fun(image, c)
+                ),
                 params=["c"],
             ).generate_interface,
         )

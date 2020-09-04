@@ -52,6 +52,7 @@ class App:
         NoiseImageMenu(menubar=menubar, image_io=image_menu.image_io)
         FilterMenu(menubar=menubar, image_io=image_menu.image_io)
 
+
 app = App()
 root = InterfaceInfo.get_instance().get_root()
 # main loop

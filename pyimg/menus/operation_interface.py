@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from tkinter import Entry, messagebox, ttk, BooleanVar
+from tkinter import BooleanVar, Entry, messagebox, ttk
 
 from pyimg.config import constants as constants
 from pyimg.menus.io_menu import ImageIO
@@ -87,11 +87,12 @@ class ImageOperation(ABC):
 
     def get_params(self):
         return {
-            **{k: float(v.get())
-               for k, v in self.extra_params.items()
-               if self.extra_params[k].get() != ''},
-            **{k[0]: float(v.get())
-               for k, v in self.extra_bool_params.items()}
+            **{
+                k: float(v.get())
+                for k, v in self.extra_params.items()
+                if self.extra_params[k].get() != ""
+            },
+            **{k[0]: float(v.get()) for k, v in self.extra_bool_params.items()},
         }
 
 

@@ -5,8 +5,9 @@ from pyimg.models.image import ImageImpl
 from pyimg.models.random_number.generator import Generator
 
 
-def apply_noise(image: ImageImpl, random_generator: Generator,
-                is_additive: bool, threshold: float) -> ImageImpl:
+def apply_noise(
+    image: ImageImpl, random_generator: Generator, is_additive: bool, threshold: float
+) -> ImageImpl:
 
     noise = random_generator.generate()
     noise = np.array(noise).reshape(image.array.shape)
