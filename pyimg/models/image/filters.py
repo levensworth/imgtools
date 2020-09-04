@@ -27,6 +27,22 @@ def mean_filter(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
     return a_img
 
 
+def mean_filter_fast(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
+    """
+    Given an Image instance, apply the mean filter using a square kernel of size
+    kernel_size.
+    :param a_img: Image instance
+    :param kernel_size: kernel size int
+    :return: transformed image
+    """
+    kernel_size = int(kernel_size)
+    a_img.convolution_fast(
+        np.ones((kernel_size, kernel_size, a_img.channels)),
+    )
+
+    return a_img
+
+
 def median_filter(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
     """
     Given an Image instance, apply the median filter using a square kernel of size
@@ -147,6 +163,26 @@ def gaussian_kernel(kernlen=5, nsig=1):
     return kern2d / kern2d.sum()
 
 
+def gaussian_filter_fast(a_img: ImageImpl, kernel_size: int, sigma: float) -> ImageImpl:
+    """
+    Given an Image instance, apply the weighted gaussian filter using a square kernel of size
+    kernel_size.
+    :param a_img: Image instance
+    :param kernel_size: kernel size int
+    :param sigma: sigma value
+    :return: transformed image
+    """
+    kernel_size = int(kernel_size)
+    kernel = (
+        np.expand_dims(gaussian_kernel(kernel_size, sigma), axis=2) * MAX_PIXEL_VALUE
+    )
+    a_img.convolution_fast(
+        (1 / kernel_size ** 2) * kernel,
+    )
+
+    return a_img
+
+
 def high_filter(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
     """
     Given a Image instance, apply high value filter.
@@ -167,7 +203,7 @@ def apply_high_filter(a_img: np.ndarray, kernel_size: int):
     kernel = np.ones((kernel_size, kernel_size)) * -1
     # augment the center value
     kernel[int(kernel_size / 2), int(kernel_size / 2)] = kernel_size
-
-    after_kernel_weights = a_img.dot(kernel)
+    # element wise multiplication
+    after_kernel_weights = a_img * kernel
 
     return np.mean(after_kernel_weights)

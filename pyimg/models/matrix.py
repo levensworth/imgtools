@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import ndimage
 
 
 class Matrix:
@@ -47,33 +48,18 @@ class Matrix:
         padding = self._calculate_padding(kernel_size)
 
         padded_matrix = self._apply_padding(padding)
-        if len(padded_matrix.shape) == 2:
-            # 2d conv
+        for channel in range(padded_matrix.shape[-1]):
             for index, _ in np.ndenumerate(self.array):
-                i, j = index
+                i, j, _ = index
                 val = fn(
                     self._get_window(
-                        padded_matrix, i + kernel_size, j + kernel_size, kernel_size
+                        padded_matrix[:, :, channel],
+                        i + kernel_size,
+                        j + kernel_size,
+                        kernel_size,
                     )
                 )
                 self.array[i, j] = val
-
-        elif len(padded_matrix.shape) == 3:
-            for channel in range(padded_matrix.shape[2]):
-                for index, _ in np.ndenumerate(self.array):
-                    i, j, _ = index
-                    val = fn(
-                        self._get_window(
-                            padded_matrix[:, :, channel],
-                            i + kernel_size,
-                            j + kernel_size,
-                            kernel_size,
-                        )
-                    )
-                    self.array[i, j] = val
-
-        else:
-            raise ArithmeticError("Convolution operator only accepts 2d or 3d matrices")
 
     def _get_window(
         self, matrix, height: int, width: int, kernel_size: int
@@ -126,6 +112,17 @@ class Matrix:
             new_matrix = np.pad(matrix[:, :], padding, "constant")
 
         return new_matrix
+
+    def convolution_fast(self, kernel: np.ndarray) -> None:
+        """
+        Given a kernel apply 2d convolution using zero padding to treat image edges.
+
+        :param kernel: np.ndarray of shape (kernel_size, kernel_size, channels)
+        :return: None
+        """
+
+        convolution = ndimage.convolve(self.array, kernel, mode="constant", cval=0.0)
+        self.array = convolution
 
     @staticmethod
     def from_array(array):

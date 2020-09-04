@@ -32,7 +32,7 @@ class FilterMenu:
                 image_io,
                 "Mean",
                 lambda image, kernel_size: linear_adj_image_wrapper(
-                    filters.mean_filter(image, kernel_size)
+                    filters.mean_filter_fast(image, kernel_size)
                 ),
                 params=["kernel_size"],
             ).generate_interface,
@@ -65,7 +65,7 @@ class FilterMenu:
                 image_io,
                 "Gaussian",
                 lambda image, sigma, kernel_size: linear_adj_image_wrapper(
-                    filters.gaussian_filter(image, kernel_size, sigma)
+                    filters.gaussian_filter_fast(image, kernel_size, sigma)
                 ),
                 params=["sigma", "kernel_size"],
             ).generate_interface,
@@ -74,7 +74,7 @@ class FilterMenu:
             label="High Filter",
             command=UnaryWithParamsImageOperation(
                 image_io,
-                "Median",
+                "High",
                 lambda image, kernel_size: linear_adj_image_wrapper(
                     filters.high_filter(image, kernel_size)
                 ),
