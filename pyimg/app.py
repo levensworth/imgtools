@@ -2,6 +2,7 @@ from tkinter import Menu, messagebox, ttk
 
 from pyimg.config.interface_info import InterfaceInfo
 from pyimg.menus.contrast_menu import FunctionMenu
+from pyimg.menus.info_menu import InfoImageMenu
 from pyimg.menus.io_menu import ImageMenu
 from pyimg.menus.point_operators import PointOperatorMenu
 
@@ -45,7 +46,7 @@ class App:
         image_menu = ImageMenu(menubar=menubar, interface=self.interface)
         PointOperatorMenu(menubar=menubar, image_io=image_menu.image_io)
         FunctionMenu(menubar=menubar)
-
+        InfoImageMenu(menubar=menubar, image_io=image_menu.image_io)
 
 app = App()
 root = InterfaceInfo.get_instance().get_root()

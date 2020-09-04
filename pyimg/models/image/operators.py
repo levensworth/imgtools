@@ -52,14 +52,14 @@ def histogram_equalization(a_img: ImageImpl) -> ImageImpl:
     :return: transformed matrix
     """
 
-    if a_img.channel == 3:
-        for i in range(a_img.channel):
+    if a_img.channels == 3:
+        for i in range(a_img.channels):
             a_img.array[:, :, i] = _equalize_single_scale(a_img.array[:, :, i])
-    elif a_img.channel == 2:
+    elif a_img.channels == 2:
         a_img = _equalize_single_scale(a_img.array)
     else:
         raise ArithmeticError(
-            "matrix with {} channels can't be processed".format(a_img.channel)
+            "matrix with {} channels can't be processed".format(a_img.channels)
         )
     return a_img
 

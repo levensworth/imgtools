@@ -11,14 +11,14 @@ class ImageImpl(Matrix):
         super(ImageImpl, self).__init__(image)
         self.wight = self.array.shape[0]
         self.height = self.array.shape[1]
-        self.channel = self.array.shape[2]
+        self.channels = self.array.shape[2]
 
     def convert_to_pil(self) -> Image:
         return Image.fromarray(self.get_array())
 
     def get_histogram_dict(self):
         hists = []
-        for i in range(self.channel):
+        for i in range(self.channels):
             unique, counts = np.unique(self.get_array()[i], return_counts=True)
             hists.append(dict(zip(unique, counts)))
         return hists
