@@ -223,3 +223,22 @@ def high_filter_fast(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
         kernel,
     )
     return a_img
+
+
+def threshold_filter(a_img: ImageImpl, threshold: float) -> ImageImpl:
+    """
+    Given a matrix image representation, apply treshold transformation
+    and return a binary matrix which follows this transformation:
+    F(img[i,j]):| max_pixel_value if img[i, j] >= threshold
+                | 0 else
+    :param a_img: matrix image representation
+    :param threshold: float between [0, max pixel value]
+    :return: transformed matrix
+    """
+
+    # applies if element wise
+    a_img.array = a_img.array >= threshold
+    # transform a boolean matrix binary and scales
+    a_img.array = a_img.array.astype(int) * MAX_PIXEL_VALUE
+
+    return a_img

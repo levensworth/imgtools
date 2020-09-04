@@ -81,3 +81,14 @@ class FilterMenu:
                 params=["kernel_size"],
             ).generate_interface,
         )
+        filter_menu.add_command(
+            label="Threshold Filter",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Threshold",
+                lambda image, threshold: linear_adj_image_wrapper(
+                    filters.threshold_filter(image, threshold)
+                ),
+                params=["threshold"],
+            ).generate_interface,
+        )
