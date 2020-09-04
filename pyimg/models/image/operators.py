@@ -1,7 +1,6 @@
 import math
 
 import numpy as np
-import scipy.stats as st
 
 from pyimg.config.constants import MAX_PIXEL_VALUE, MIN_PIXEL_VALUE
 from pyimg.models.image import ImageImpl
