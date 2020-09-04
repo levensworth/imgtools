@@ -18,7 +18,7 @@ class Matrix:
         return self.apply_to(other, lambda x, y: x - y)
 
     def mul(self, other):
-        return self.apply_to(other, lambda x, y: np.matmul(x, y))
+        return self.apply_to(other, lambda x, y: x * y)
 
     def mul_scalar(self, scalar: float):
         return self.apply(lambda x: x * scalar)

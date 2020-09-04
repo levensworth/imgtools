@@ -12,10 +12,10 @@ def plot_hist(image: ImageImpl):
     if image.channels > 1:
         color = ("red", "green", "blue")
         legends = ["Red Channel", "Green Channel", "Blue Channel", "Total"]
-        # full_plot = plt.figure()
+        plt.figure(1)
 
         for i in range(image.channels):
-            plt.figure()
+            plt.figure(2 + i)
             plt.hist(
                 image.array[:, :, i].ravel(),
                 bins=constants.MAX_PIXEL_VALUE + 1,
@@ -25,14 +25,14 @@ def plot_hist(image: ImageImpl):
             plt.ylabel("Count")
             plt.legend([legends[i]])
             plt.title("Histogram for " + legends[i])
-            plt.show()
 
-            # full_plot.hist(image.array[:, :, i].ravel(), bins=constants.MAX_PIXEL_VALUE + 1, color=color[i], alpha=0.5)
+            plt.figure(1)
+            plt.hist(image.array[:, :, i].ravel(), bins=constants.MAX_PIXEL_VALUE + 1, color=color[i], alpha=0.35)
 
-        # full_plot.xlabel('Intensity Value')
-        # full_plot.ylabel('Count')
-        # full_plot.legend(legends)
-        # full_plot.show()
+        plt.xlabel('Intensity Value')
+        plt.ylabel('Count')
+        plt.legend(legends)
+        plt.show()
     else:
         plt.figure()
         plt.hist(image.array.ravel(), bins=constants.MAX_PIXEL_VALUE + 1)
