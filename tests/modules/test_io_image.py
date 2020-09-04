@@ -5,7 +5,7 @@ from PIL import Image
 
 from pyimg.modules.image_io import load_unformatted_raw_image
 
-TEST_IMG = pathlib.PurePosixPath("/Users/levensworth/pyimg-tools/generated/elena.RAW")
+TEST_IMG = pathlib.PurePosixPath("generated/data/elena.RAW")
 CONTROL_IMG = pathlib.PurePosixPath(
     "/Users/levensworth/pyimg-tools/generated/elena.jpeg"
 )
