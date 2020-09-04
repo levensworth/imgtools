@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from pathlib import Path
@@ -7,7 +8,7 @@ import rawpy  # nt sure if we can use this library... but i don't see the point 
 from PIL import Image
 
 
-def load_raw_image(path: Path) -> np.ndarray:
+def load_format_raw_image(path: Path) -> np.ndarray:
     """
     Given a system path to a raw file, load data
     :param
@@ -15,8 +16,47 @@ def load_raw_image(path: Path) -> np.ndarray:
     :return: np.ndarray
     """
 
-    raw = rawpy.imread(str(path))
+    try:
+        raw = rawpy.imread(str(path))
+    except Exception:
+        raise AttributeError
     return raw.raw_image
+
+
+def load_unformatted_raw_image(path: Path) -> np.ndarray:
+    """
+    Given a .RAW unformatted image and assuming a .info file containing
+    metadata in a json format exist at the same path level with the same name.
+    Returns a matrix image representation
+    :param path: pathlib containing path to .RAW file
+    :return: image matrix representation
+    """
+    image_path = str(path)
+    metadata_path = os.path.join(str(path.parent), path.stem + ".info")
+
+    # load metadata
+    with open(metadata_path, "r") as f:
+        metadata = json.load(f)
+    # load data according to metadata
+    img = _load_matrix_from_file(image_path, metadata["width"], metadata["height"])
+    return np.uint8(np.round(img))
+
+
+def _load_matrix_from_file(path: str, width: int, height: int) -> np.ndarray:
+    """
+    Given the path to a binary file, load matrix according to the width and height.
+    :param path: str path to binary file
+    :param width: int
+    :param height: tin
+    :return: numpy matrix
+    """
+
+    matrix = []
+    with open(path, "rb") as f:
+        for b in f.read():
+            matrix.append(b)
+
+    return np.array(matrix).reshape((height, width))
 
 
 def convert_array_to_img(img_array: np.ndarray) -> Image:
