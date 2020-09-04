@@ -1,3 +1,3 @@
 from .matrix import Matrix
 
-__all__ = ("Matrix", )
+__all__ = ("Matrix",)

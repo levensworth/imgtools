@@ -2,8 +2,10 @@ import os
 from tkinter import Menu
 
 from pyimg.config import constants
-from pyimg.menus.operation_interface import BinaryImageOperation, UnaryImageOperation, UnaryWithParamsImageOperation
-from pyimg.models.image import operators, ImageImpl
+from pyimg.menus.operation_interface import (BinaryImageOperation,
+                                             UnaryImageOperation,
+                                             UnaryWithParamsImageOperation)
+from pyimg.models.image import ImageImpl, operators
 from pyimg.modules.image_io import display_img, save_img
 
 
@@ -29,23 +31,29 @@ class PointOperatorMenu:
 
         binary_operators_menu.add_command(
             label="Add",
-            command=BinaryImageOperation(image_io, "Add",
-                                         lambda x, y: linear_adj_image_wrapper(ImageImpl.add_matrix(x, y))
-                                         ).generate_interface
+            command=BinaryImageOperation(
+                image_io,
+                "Add",
+                lambda x, y: linear_adj_image_wrapper(ImageImpl.add_matrix(x, y)),
+            ).generate_interface,
         )
 
         binary_operators_menu.add_command(
             label="Subtract",
-            command=BinaryImageOperation(image_io, "Sub",
-                                         lambda x, y: linear_adj_image_wrapper(ImageImpl.sub_matrix(x, y))
-                                         ).generate_interface
+            command=BinaryImageOperation(
+                image_io,
+                "Sub",
+                lambda x, y: linear_adj_image_wrapper(ImageImpl.sub_matrix(x, y)),
+            ).generate_interface,
         )
 
         binary_operators_menu.add_command(
             label="Multiply",
-            command=BinaryImageOperation(image_io, "Mul",
-                                         lambda x, y: linear_adj_image_wrapper(ImageImpl.mul_matrix(x, y))
-                                         ).generate_interface
+            command=BinaryImageOperation(
+                image_io,
+                "Mul",
+                lambda x, y: linear_adj_image_wrapper(ImageImpl.mul_matrix(x, y)),
+            ).generate_interface,
         )
 
         single_img_menu = Menu(operation_menu, tearoff=0)
@@ -53,36 +61,50 @@ class PointOperatorMenu:
 
         single_img_menu.add_command(
             label="CRD",
-            command=UnaryImageOperation(image_io, 'CRD',
-                                        lambda x: linear_adj_image_wrapper(operators.dynamic_compression_image(x))
-                                        ).generate_interface
+            command=UnaryImageOperation(
+                image_io,
+                "CRD",
+                lambda x: linear_adj_image_wrapper(
+                    operators.dynamic_compression_image(x)
+                ),
+            ).generate_interface,
         )
 
         single_img_menu.add_command(
             label="Multiply scalar",
-            command=UnaryWithParamsImageOperation(image_io, 'Mul',
-                                                  lambda m1, scalar: linear_adj_image_wrapper(ImageImpl.mul_scalar_matrix(m1, scalar)),
-                                                  params=['scalar']
-                                                  ).generate_interface
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Mul",
+                lambda m1, scalar: linear_adj_image_wrapper(
+                    ImageImpl.mul_scalar_matrix(m1, scalar)
+                ),
+                params=["scalar"],
+            ).generate_interface,
         )
         single_img_menu.add_command(
             label="Gamma",
-            command=UnaryWithParamsImageOperation(image_io, 'Gamma',
-                                                  lambda m1, c: linear_adj_image_wrapper(operators.gamma_fun(m1, c)),
-                                                  params=['c']
-                                                  ).generate_interface
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Gamma",
+                lambda m1, c: linear_adj_image_wrapper(operators.gamma_fun(m1, c)),
+                params=["c"],
+            ).generate_interface,
         )
         single_img_menu.add_command(
             label="Negative",
-            command=UnaryImageOperation(image_io, 'Neg',
-                                        lambda x: linear_adj_image_wrapper(operators.negative_img_fun(x))
-                                        ).generate_interface
+            command=UnaryImageOperation(
+                image_io,
+                "Neg",
+                lambda x: linear_adj_image_wrapper(operators.negative_img_fun(x)),
+            ).generate_interface,
         )
         single_img_menu.add_command(
             label="Equalize Histogram",
-            command=UnaryImageOperation(image_io, 'Equ',
-                                        lambda x: linear_adj_image_wrapper(operators.histogram_equalization(x))
-                                        ).generate_interface
+            command=UnaryImageOperation(
+                image_io,
+                "Equ",
+                lambda x: linear_adj_image_wrapper(operators.histogram_equalization(x)),
+            ).generate_interface,
         )
         # subtract_menu.add_command(label="B&W", command=generate_subtract_grey_operation_input)
         # multiply_menu = Menu(operation_menu, tearoff=0)

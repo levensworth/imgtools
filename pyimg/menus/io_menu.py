@@ -16,7 +16,7 @@ class ImageIO:
         self.interface = interface
 
     def full_load_image(self):
-        file_name = self.choose_file_name('Select file')
+        file_name = self.choose_file_name("Select file")
         image = self.load_image(file_name)
 
         # PhotoImage class is used to add image to widgets, icons etc
@@ -29,12 +29,10 @@ class ImageIO:
 
     def full_save_image(self):
         if self.interface.result_image is None:
-            messagebox.showerror(
-                title="Error", message="There is no image to save."
-            )
+            messagebox.showerror(title="Error", message="There is no image to save.")
         else:
             image = self.interface.result_image
-            image_name = self.choose_file_name('Save as')
+            image_name = self.choose_file_name("Save as")
             self.save_image(image, image_name)
 
     def reset(self):
@@ -64,16 +62,12 @@ class ImageIO:
         :return
             str: file path
         """
-        if title is 'Save as':
+        if title is "Save as":
             op = filedialog.asksaveasfilename
         else:
             op = filedialog.askopenfilename
 
-        file_name = op(
-            initialdir=os.getcwd(),
-            title=title,
-            filetypes=IMG_EXTENSIONS
-        )
+        file_name = op(initialdir=os.getcwd(), title=title, filetypes=IMG_EXTENSIONS)
         if file_name:
             return file_name
         else:
@@ -90,9 +84,11 @@ class ImageMenu:
         self.image_menu = Menu(menubar, tearoff=0)
         self.image_io = ImageIO(interface)
         menubar.add_cascade(label="Image", menu=self.image_menu)
-        self.image_menu.add_command(label="Open Image", command=self.image_io.full_load_image)
-        self.image_menu.add_command(label="Save Image As", command=self.image_io.full_save_image)
+        self.image_menu.add_command(
+            label="Open Image", command=self.image_io.full_load_image
+        )
+        self.image_menu.add_command(
+            label="Save Image As", command=self.image_io.full_save_image
+        )
         self.image_menu.add_separator()
         self.image_menu.add_command(label="Exit", command=interface.root.quit)
-
-

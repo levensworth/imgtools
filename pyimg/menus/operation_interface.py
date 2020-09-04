@@ -51,7 +51,7 @@ class ImageOperation(ABC):
             ttk.Label(
                 self.image_input.interface.buttons_frame,
                 text=param_text,
-                background=constants.TOP_COLOR
+                background=constants.TOP_COLOR,
             ).grid(row=1, column=2 * i)
             param = Entry(self.image_input.interface.buttons_frame)
             param.grid(row=1, column=1 + 2 * i)
@@ -60,7 +60,7 @@ class ImageOperation(ABC):
         add_button = ttk.Button(
             self.image_input.interface.buttons_frame,
             text=self.button_text,
-            command=self.command_apply
+            command=self.command_apply,
         )
         extra_row = int(len(self.extra_params) > 0)
         add_button.grid(row=1 + extra_row, column=0)
@@ -70,7 +70,11 @@ class ImageOperation(ABC):
         return self
 
     def get_params(self):
-        return {k: float(v.get()) for k, v in self.extra_params.items() if self.extra_params[k] is not None}
+        return {
+            k: float(v.get())
+            for k, v in self.extra_params.items()
+            if self.extra_params[k] is not None
+        }
 
 
 class UnaryImageOperation(ImageOperation):
@@ -84,7 +88,8 @@ class UnaryImageOperation(ImageOperation):
             return self.func(ImageImpl(image))
         else:
             messagebox.showerror(
-                title="Error", message="You need to upload one image for this operation."
+                title="Error",
+                message="You need to upload one image for this operation.",
             )
 
 
@@ -105,10 +110,11 @@ class UnaryWithParamsImageOperation(UnaryImageOperation):
     def command_apply(self):
         if self.is_ready():
             image = self.image_input.get_input()[0]
-            return self.func(**{**{'m1': ImageImpl(image)}, **self.get_params()})
+            return self.func(**{**{"m1": ImageImpl(image)}, **self.get_params()})
         else:
             messagebox.showerror(
-                title="Error", message="You need to upload one image for this operation and set the parameters."
+                title="Error",
+                message="You need to upload one image for this operation and set the parameters.",
             )
 
 
@@ -123,6 +129,6 @@ class BinaryImageOperation(ImageOperation):
             return self.func(ImageImpl(image1), ImageImpl(image2))
         else:
             messagebox.showerror(
-                title="Error", message="You need to upload two images for this operation."
+                title="Error",
+                message="You need to upload two images for this operation.",
             )
-

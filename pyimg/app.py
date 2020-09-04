@@ -48,6 +48,7 @@ class App:
         FunctionMenu(menubar=menubar)
         InfoImageMenu(menubar=menubar, image_io=image_menu.image_io)
 
+
 app = App()
 root = InterfaceInfo.get_instance().get_root()
 # main loop

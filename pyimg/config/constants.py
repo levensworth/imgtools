@@ -19,4 +19,3 @@ IMG_EXTENSIONS = [
     ("jpeg", "*.jpeg"),
     ("raw", "*.RAW"),
 ]
-
