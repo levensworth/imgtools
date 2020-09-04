@@ -1,10 +1,8 @@
-import os
 from abc import ABC, abstractmethod
 from tkinter import Entry, messagebox, ttk
 
 from pyimg.config import constants as constants
 from pyimg.menus.io_menu import ImageIO
-from pyimg.models.image import ImageImpl
 
 
 class ImageOperationInput:
@@ -85,7 +83,7 @@ class UnaryImageOperation(ImageOperation):
     def command_apply(self):
         if self.is_ready():
             image = self.image_input.get_input()[0]
-            return self.func(ImageImpl(image))
+            return self.func(image)
         else:
             messagebox.showerror(
                 title="Error",
@@ -110,7 +108,8 @@ class UnaryWithParamsImageOperation(UnaryImageOperation):
     def command_apply(self):
         if self.is_ready():
             image = self.image_input.get_input()[0]
-            return self.func(**{**{"m1": ImageImpl(image)}, **self.get_params()})
+
+            return self.func(**{**{"m1": image}, **self.get_params()})
         else:
             messagebox.showerror(
                 title="Error",
@@ -126,7 +125,8 @@ class BinaryImageOperation(ImageOperation):
     def command_apply(self):
         if self.is_ready():
             image1, image2 = self.image_input.get_input()
-            return self.func(ImageImpl(image1), ImageImpl(image2))
+
+            return self.func(image1, image2)
         else:
             messagebox.showerror(
                 title="Error",

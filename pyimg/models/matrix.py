@@ -32,7 +32,7 @@ class Matrix:
     def min_value(self) -> float:
         return np.amin(self.array)
 
-    def convolution(self, kernel_size: int, fn):
+    def convolution(self, kernel_size: int, fn) -> None:
         """
         A discrete convolution implementation. Apply a function given a square window
         size of the original matrix.
@@ -89,7 +89,10 @@ class Matrix:
         """
 
         pad = int(kernel_size / 2)
-        return matrix[height - pad : height + pad + 1, width - pad : width + pad + 1]
+        return matrix[
+            int(height - pad) : int(height + pad + 1),
+            int(width - pad) : int(width + pad + 1),
+        ]
 
     def _calculate_padding(self, kernel_size: int) -> int:
         for s in self.array.shape[:-1]:
@@ -97,7 +100,7 @@ class Matrix:
             if s < kernel_size:
                 raise ArithmeticError("Window is bigger that matrix!")
 
-        return [(kernel_size,)]
+        return [(int(kernel_size),)]
 
     def _apply_padding(self, padding: [...]):
         """
@@ -109,12 +112,12 @@ class Matrix:
         matrix = self.array
         if len(matrix.shape) == 3:
 
-            new_dim = [i + 2 * padding[0][0] for i in matrix.shape[:-1]] + [
+            new_dim = [int(i + 2 * padding[0][0]) for i in matrix.shape[:-1]] + [
                 self.array.shape[-1]
             ]
             new_matrix = np.zeros(new_dim)
 
-            for dim in range(len(matrix.shape)):
+            for dim in range(matrix.shape[-1]):
                 # by default 'constant' means fill with zeros
                 new_matrix[:, :, dim] = np.pad(matrix[:, :, dim], padding, "constant")
 

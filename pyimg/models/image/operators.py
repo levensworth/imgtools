@@ -136,3 +136,23 @@ def linear_adjustment(a_img: ImageImpl) -> ImageImpl:
         constant = MIN_PIXEL_VALUE - slope * min_value
 
     return a_img.mul_scalar(slope).add_scalar(constant)
+
+
+def mean_filter(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
+    """
+    Given an Image instance, apply the mean filter using a square kernel of size
+    kernel_size.
+    :param a_img: Image instance
+    :param kernel_size: kernel size int
+    :return: transformed image
+    """
+    a_img.convolution(
+        kernel_size,
+        lambda window: np.mean(
+            window.reshape(
+                -1,
+            )
+        ),
+    )
+
+    return a_img

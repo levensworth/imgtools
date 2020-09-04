@@ -106,16 +106,3 @@ class PointOperatorMenu:
                 lambda x: linear_adj_image_wrapper(operators.histogram_equalization(x)),
             ).generate_interface,
         )
-        # subtract_menu.add_command(label="B&W", command=generate_subtract_grey_operation_input)
-        # multiply_menu = Menu(operation_menu, tearoff=0)
-        # operation_menu.add_cascade(label="Multiply", menu=multiply_menu)
-        # multiply_menu.add_command(label="By scalar", command=generate_multiply_by_scalar_input)
-        # multiply_menu.add_command(label="Two images", command=generate_multiply_images_operation_input)
-        # operation_menu.add_command(label="Copy", command=generate_copy_sub_image_input)
-        # negative_menu = Menu(operation_menu, tearoff=0)
-        # operation_menu.add_cascade(label="Negative", menu=negative_menu)
-        # negative_menu.add_command(label="Colored Negative", command=lambda:
-        #                           colored_negative_wrapper(interface.current_image, constants.WIDTH, constants.HEIGHT))
-        # negative_menu.add_command(label="Grey Negative", command=lambda:
-        #                           grey_negative_wrapper(interface.current_image, constants.WIDTH, constants.HEIGHT))
-        #

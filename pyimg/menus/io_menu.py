@@ -8,6 +8,7 @@ from PIL import Image, ImageTk
 
 from pyimg.config import constants as constants
 from pyimg.config.constants import IMG_EXTENSIONS
+from pyimg.models.image import ImageImpl
 from pyimg.modules import image_io
 
 
@@ -24,8 +25,15 @@ class ImageIO:
         self.interface.generate_canvas()
         self.interface.canvas.create_image(0, 0, image=image_disp, anchor="nw")
         self.interface.canvas.image = image_disp
-        self.interface.images.append(image)
-        return image
+        image_matrix = np.array(image)
+        dims = len(image_matrix.shape)
+        image_matrix = (
+            np.expand_dims(image_matrix, axis=dims) if dims == 2 else image_matrix
+        )
+
+        self.interface.images.append(ImageImpl(image_matrix))
+
+        return ImageImpl(image_matrix)
 
     def full_save_image(self):
         if self.interface.result_image is None:
@@ -47,6 +55,7 @@ class ImageIO:
             image = Image.open(file_name)
         # resize the image and apply a high-quality down sampling filter
         image = image.resize((constants.WIDTH, constants.HEIGHT), Image.ANTIALIAS)
+
         return image
 
     @staticmethod
@@ -62,7 +71,7 @@ class ImageIO:
         :return
             str: file path
         """
-        if title is "Save as":
+        if title == "Save as":
             op = filedialog.asksaveasfilename
         else:
             op = filedialog.askopenfilename

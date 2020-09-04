@@ -8,6 +8,19 @@ import rawpy  # nt sure if we can use this library... but i don't see the point 
 from PIL import Image
 
 
+def load_raw_image(path: Path) -> np.ndarray:
+    """
+    Given a path to a  raw image try to load it
+    :param path: path to the raw file
+    :return: matrix representation
+    """
+
+    try:
+        return load_format_raw_image(path)
+    except Exception:
+        return load_unformatted_raw_image(path)
+
+
 def load_format_raw_image(path: Path) -> np.ndarray:
     """
     Given a system path to a raw file, load data
