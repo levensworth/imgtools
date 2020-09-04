@@ -121,8 +121,11 @@ class Matrix:
         :return: None
         """
 
-        convolution = ndimage.convolve(self.array, kernel, mode="constant", cval=0.0)
-        self.array = convolution
+        for dim in range(self.array.shape[-1]):
+            convolution = ndimage.convolve(
+                self.array[:, :, dim], kernel, mode="constant", cval=0.0
+            )
+            self.array[:, :, dim] = convolution
 
     @staticmethod
     def from_array(array):

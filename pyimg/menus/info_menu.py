@@ -27,10 +27,15 @@ def plot_hist(image: ImageImpl):
             plt.title("Histogram for " + legends[i])
 
             plt.figure(1)
-            plt.hist(image.array[:, :, i].ravel(), bins=constants.MAX_PIXEL_VALUE + 1, color=color[i], alpha=0.35)
+            plt.hist(
+                image.array[:, :, i].ravel(),
+                bins=constants.MAX_PIXEL_VALUE + 1,
+                color=color[i],
+                alpha=0.35,
+            )
 
-        plt.xlabel('Intensity Value')
-        plt.ylabel('Count')
+        plt.xlabel("Intensity Value")
+        plt.ylabel("Count")
         plt.legend(legends)
         plt.show()
     else:

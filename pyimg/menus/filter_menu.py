@@ -76,7 +76,7 @@ class FilterMenu:
                 image_io,
                 "High",
                 lambda image, kernel_size: linear_adj_image_wrapper(
-                    filters.high_filter(image, kernel_size)
+                    filters.high_filter_fast(image, kernel_size)
                 ),
                 params=["kernel_size"],
             ).generate_interface,
