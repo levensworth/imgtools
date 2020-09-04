@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from tkinter import Entry, messagebox, ttk
+from tkinter import Entry, messagebox, ttk, BooleanVar
 
 from pyimg.config import constants as constants
 from pyimg.menus.io_menu import ImageIO
@@ -12,7 +12,7 @@ class ImageOperationInput:
         self.interface = image_io.interface
 
     def generate_inputs(self, qty):
-        self.image_io.reset()
+        self.interface.remove_buttons()
         for i in range(qty):
             row, column = 0, i
             image_button = ttk.Button(
@@ -32,6 +32,7 @@ class ImageOperation(ABC):
         self.operands = operands
         self.button_text = button_text
         self.extra_params = {}
+        self.extra_bool_params = {}
 
     @abstractmethod
     def command_apply(self):
@@ -55,23 +56,42 @@ class ImageOperation(ABC):
             param.grid(row=1, column=1 + 2 * i)
             self.extra_params[param_text] = param
 
+        count = 0
+        for param_texts in self.extra_bool_params.keys():
+            for i, param_text in enumerate(param_texts):
+                ttk.Radiobutton(
+                    self.image_input.interface.buttons_frame,
+                    text=param_text,
+                    value=i == 0,
+                    variable=self.extra_bool_params[param_texts],
+                ).grid(row=2, column=count)
+                count += 1
+
         add_button = ttk.Button(
             self.image_input.interface.buttons_frame,
             text=self.button_text,
             command=self.command_apply,
         )
         extra_row = int(len(self.extra_params) > 0)
+        extra_row = extra_row + int(len(self.extra_bool_params) > 0)
         add_button.grid(row=1 + extra_row, column=0)
 
     def add_button_input(self, param_text):
         self.extra_params[param_text] = None
         return self
 
+    def add_radio_button_input(self, param_text):
+        self.extra_bool_params[param_text] = BooleanVar()
+        self.extra_bool_params[param_text].set(True)
+        return self
+
     def get_params(self):
         return {
-            k: float(v.get())
-            for k, v in self.extra_params.items()
-            if self.extra_params[k] is not None
+            **{k: float(v.get())
+               for k, v in self.extra_params.items()
+               if self.extra_params[k].get() != ''},
+            **{k[0]: float(v.get())
+               for k, v in self.extra_bool_params.items()}
         }
 
 
@@ -108,8 +128,7 @@ class UnaryWithParamsImageOperation(UnaryImageOperation):
     def command_apply(self):
         if self.is_ready():
             image = self.image_input.get_input()[0]
-
-            return self.func(**{**{"m1": image}, **self.get_params()})
+            return self.func(**{**{"image": image}, **self.get_params()})
         else:
             messagebox.showerror(
                 title="Error",

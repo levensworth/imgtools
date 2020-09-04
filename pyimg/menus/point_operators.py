@@ -1,3 +1,4 @@
+import datetime
 import os
 from tkinter import Menu
 
@@ -13,7 +14,7 @@ def linear_adj_image_wrapper(image: ImageImpl):
     adjusted_img = operators.linear_adjustment(image)
     img = adjusted_img.convert_to_pil()
     display_img(img)
-    save_img(img, os.path.join(constants.SAVE_PATH, "result_img.jpg"))
+    save_img(img, os.path.join(constants.SAVE_PATH, 'result_img ' + str(datetime.datetime.now()) + '.jpg'))
 
 
 class PointOperatorMenu:
@@ -75,8 +76,8 @@ class PointOperatorMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Mul",
-                lambda m1, scalar: linear_adj_image_wrapper(
-                    ImageImpl.mul_scalar_matrix(m1, scalar)
+                lambda image, scalar: linear_adj_image_wrapper(
+                    ImageImpl.mul_scalar_matrix(image, scalar)
                 ),
                 params=["scalar"],
             ).generate_interface,
@@ -86,7 +87,7 @@ class PointOperatorMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Gamma",
-                lambda m1, c: linear_adj_image_wrapper(operators.gamma_fun(m1, c)),
+                lambda image, c: linear_adj_image_wrapper(operators.gamma_fun(image, c)),
                 params=["c"],
             ).generate_interface,
         )

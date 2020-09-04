@@ -5,6 +5,7 @@ from pyimg.menus.contrast_menu import FunctionMenu
 from pyimg.menus.filter_menu import FilterMenu
 from pyimg.menus.info_menu import InfoImageMenu
 from pyimg.menus.io_menu import ImageMenu
+from pyimg.menus.noise_menu import NoiseImageMenu
 from pyimg.menus.point_operators import PointOperatorMenu
 
 
@@ -45,11 +46,11 @@ class App:
         menubar = Menu(root)
         root.config(menu=menubar)
         image_menu = ImageMenu(menubar=menubar, interface=self.interface)
+        InfoImageMenu(menubar=menubar, image_io=image_menu.image_io)
         PointOperatorMenu(menubar=menubar, image_io=image_menu.image_io)
         FunctionMenu(menubar=menubar)
-        InfoImageMenu(menubar=menubar, image_io=image_menu.image_io)
+        NoiseImageMenu(menubar=menubar, image_io=image_menu.image_io)
         FilterMenu(menubar=menubar, image_io=image_menu.image_io)
-
 
 app = App()
 root = InterfaceInfo.get_instance().get_root()
