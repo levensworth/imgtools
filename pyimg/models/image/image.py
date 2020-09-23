@@ -28,6 +28,11 @@ class ImageImpl(Matrix):
     def get_array(self) -> np.ndarray:
         return np.uint8(np.round(self.array))
 
+    def __copy__(self):
+        cpy = np.copy(self.array)
+        a_copy = ImageImpl(cpy)
+        return a_copy
+
     @staticmethod
     def from_array(array):
         return ImageImpl(array)
