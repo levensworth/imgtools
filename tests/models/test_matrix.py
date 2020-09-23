@@ -19,6 +19,9 @@ def given_a_kernel_size():
     return 3
 
 
+# This test is deprecated because we
+# shifted towards 3 dimensional tensors as defacto standard for all images (B&W as well as RGB)
+"""
 def test_2d_conv():
 
     matrix = given_a_2d_matrix()
@@ -27,6 +30,7 @@ def test_2d_conv():
 
     matrix.convolution(kernel_size, fn)
     assert then_check_2d_aplication(matrix.array)
+"""
 
 
 def test_3d_conv():

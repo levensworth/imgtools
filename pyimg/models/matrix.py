@@ -50,7 +50,12 @@ class Matrix:
         padded_matrix = self._apply_padding(padding)
         for channel in range(padded_matrix.shape[-1]):
             for index, _ in np.ndenumerate(self.array):
-                i, j, _ = index
+                try:
+                    # case 3d image
+                    i, j, _ = index
+                except ValueError:
+                    # case 2d image
+                    i, j = index
                 val = fn(
                     self._get_window(
                         padded_matrix[:, :, channel],

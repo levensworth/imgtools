@@ -2,6 +2,7 @@ import math
 
 import numpy as np
 import scipy.stats as st
+from scipy import ndimage
 
 from pyimg.config.constants import MAX_PIXEL_VALUE, MIN_PIXEL_VALUE
 from pyimg.models.image import ImageImpl
@@ -63,7 +64,7 @@ def median_filter(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
     return a_img
 
 
-def median_filter(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
+def median_filter_fast(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
     """
     Given an Image instance, apply the median filter using a square kernel of size
     kernel_size.
@@ -71,15 +72,11 @@ def median_filter(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
     :param kernel_size: kernel size int
     :return: transformed image
     """
-    a_img.convolution(
-        kernel_size,
-        lambda window: np.median(
-            window.reshape(
-                -1,
-            )
-        ),
-    )
+    # build kernel
+    kernel_size = int(kernel_size)
 
+    filtered = ndimage.median_filter(a_img.array, size=kernel_size)
+    a_img.array = filtered
     return a_img
 
 
