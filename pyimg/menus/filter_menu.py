@@ -2,9 +2,11 @@ import os
 from tkinter import Menu
 
 from pyimg.config import constants
-from pyimg.menus.operation_interface import (BinaryImageOperation,
-                                             UnaryImageOperation,
-                                             UnaryWithParamsImageOperation)
+from pyimg.menus.operation_interface import (
+    BinaryImageOperation,
+    UnaryImageOperation,
+    UnaryWithParamsImageOperation,
+)
 from pyimg.models.image import ImageImpl, filters, operators
 from pyimg.modules.image_io import display_img, save_img
 
