@@ -20,7 +20,7 @@ def plot_hist(image: ImageImpl):
             plt.hist(
                 channel.ravel(),
                 bins=constants.MAX_PIXEL_VALUE + 1,
-                weights=np.zeros_like(channel).ravel() + 1. / channel.size,
+                weights=np.zeros_like(channel).ravel() + 1.0 / channel.size,
                 color=color[i],
             )
             plt.xlabel("Intensity Value")
@@ -32,7 +32,7 @@ def plot_hist(image: ImageImpl):
             plt.hist(
                 channel.ravel(),
                 bins=constants.MAX_PIXEL_VALUE + 1,
-                weights=np.zeros_like(channel).ravel() + 1. / channel.size,
+                weights=np.zeros_like(channel).ravel() + 1.0 / channel.size,
                 color=color[i],
                 alpha=0.35,
             )
@@ -43,10 +43,11 @@ def plot_hist(image: ImageImpl):
         plt.show()
     else:
         plt.figure()
-        plt.hist(image.array.ravel(),
-                 bins=constants.MAX_PIXEL_VALUE + 1,
-                 weights=np.zeros_like(image.array).ravel() + 1. / image.array.size,
-                 )
+        plt.hist(
+            image.array.ravel(),
+            bins=constants.MAX_PIXEL_VALUE + 1,
+            weights=np.zeros_like(image.array).ravel() + 1.0 / image.array.size,
+        )
         plt.xlabel("Intensity Value")
         plt.ylabel("Count")
         plt.legend("Gray scale")

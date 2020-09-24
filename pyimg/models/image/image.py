@@ -48,7 +48,9 @@ class ImageImpl(Matrix):
         image_equalized = np.zeros(array.shape)
 
         for c in range(self.channels):
-            image_equalized[:, :, c] = ImageImpl._equalize_cdf(array[:, :, c], image_cdf[c])
+            image_equalized[:, :, c] = ImageImpl._equalize_cdf(
+                array[:, :, c], image_cdf[c]
+            )
         return ImageImpl.from_array(image_equalized)
 
     @staticmethod
@@ -79,6 +81,4 @@ class ImageImpl(Matrix):
     @staticmethod
     def _equalize_cdf(img: np.ndarray, image_cdf) -> np.ndarray:
         # use linear interpolation of cdf to find new pixel values. Scipy alternative exists
-        return np.interp(img,
-                         range(0, constants.PIXEL_RANGE),
-                         image_cdf)
+        return np.interp(img, range(0, constants.PIXEL_RANGE), image_cdf)

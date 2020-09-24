@@ -5,7 +5,8 @@ from pyimg.config import constants
 from pyimg.menus.operation_interface import (BinaryImageOperation,
                                              UnaryImageOperation,
                                              UnaryWithParamsImageOperation)
-from pyimg.models.image import ImageImpl, border_detection, operators
+from pyimg.models.image import (ImageImpl, border_detection,
+                                multi_direction_border_detection, operators)
 from pyimg.modules.image_io import display_img, save_img
 
 
@@ -73,5 +74,53 @@ class BorderMenu:
                     )
                 ),
                 params=["threshold", "sigma", "kernel_size"],
+            ).generate_interface,
+        )
+
+        filter_menu.add_command(
+            label="Prewitt multi dir operator",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Prewitt",
+                lambda image: linear_adj_image_wrapper(
+                    multi_direction_border_detection.prewitt_border_detection(image)
+                ),
+                params=[],
+            ).generate_interface,
+        )
+
+        filter_menu.add_command(
+            label="Sobel multi dir operator",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Sobel",
+                lambda image: linear_adj_image_wrapper(
+                    multi_direction_border_detection.sobel_border_detection(image)
+                ),
+                params=[],
+            ).generate_interface,
+        )
+
+        filter_menu.add_command(
+            label="ITBA multi dir operator",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "ITBA",
+                lambda image: linear_adj_image_wrapper(
+                    multi_direction_border_detection.itba_border_detection(image)
+                ),
+                params=[],
+            ).generate_interface,
+        )
+
+        filter_menu.add_command(
+            label="Kirish multi dir operator",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Kirish",
+                lambda image: linear_adj_image_wrapper(
+                    multi_direction_border_detection.kirish_border_detection(image)
+                ),
+                params=[],
             ).generate_interface,
         )
