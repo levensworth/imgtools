@@ -37,3 +37,39 @@ class BorderMenu:
                 params=[],
             ).generate_interface,
         )
+
+        filter_menu.add_command(
+            label="Sobel operator",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                'Sobel',
+                lambda image: linear_adj_image_wrapper(
+                    border_detection.sobel_detector(image)
+                ),
+                params=[],
+            ).generate_interface,
+        )
+
+        filter_menu.add_command(
+            label="laplacian operator",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                'laplace',
+                lambda image, threshold: linear_adj_image_wrapper(
+                    border_detection.laplacian_border_detection(image, threshold)
+                ),
+                params=['threshold'],
+            ).generate_interface,
+        )
+
+        filter_menu.add_command(
+            label="gaussian laplacian operator",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                'gauss',
+                lambda image, threshold, sigma, kernel_size: linear_adj_image_wrapper(
+                    border_detection.gaussian_laplacian_detection(image, threshold, sigma, kernel_size)
+                ),
+                params=['threshold', 'sigma', 'kernel_size'],
+            ).generate_interface,
+        )
