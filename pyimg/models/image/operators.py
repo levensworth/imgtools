@@ -52,48 +52,7 @@ def histogram_equalization(a_img: ImageImpl) -> ImageImpl:
     :return: transformed matrix
     """
 
-    for i in range(a_img.channels):
-        a_img.array[:, :, i] = _equalize_single_scale(a_img.array[:, :, i])
-
-    return a_img
-
-
-def _equalize_single_scale(a_matrix: np.ndarray) -> np.ndarray:
-    """
-    Given a matrix representation of pixel values with shape (n,m)
-    apply histogram equalization
-    :param a_matrix: pixel matrix of shape (n, m)
-    :return: transformed matrix
-    """
-
-    local_max_pixel_value = np.amax(a_matrix)
-    local_min_pixel_value = np.amin(a_matrix)
-
-    total_pixels = np.count_nonzero(a_matrix > 0)
-    # for each value in the pixel scale equalize matrix
-    for grey_value in range(MAX_PIXEL_VALUE):
-        # TODO: this is too slow!
-        new_grey_value = 0
-        for i in range(grey_value):
-            # to calculate new grey iterate over all prev values
-            indices = np.argwhere(a_matrix == i)
-            new_grey_value += len(indices) / total_pixels
-
-        # new_grey is a value in range [0, 1) , we transform it to [0, max pixel val]
-        new_grey_value = int(
-            new_grey_value * (local_max_pixel_value - local_min_pixel_value)
-            + local_min_pixel_value
-        )
-
-        # get indeces of all pixels with specified grey value
-        # https://stackoverflow.com/questions/4588628/find-indices-of-elements-equal-to-zero-in-a-numpy-array
-        indices = np.argwhere(a_matrix == grey_value)
-
-        # transform those values with new grey val
-        for y, x in indices:
-            a_matrix[y, x] = new_grey_value
-
-    return a_matrix
+    return a_img.equalize_image()
 
 
 def linear_adjustment(a_img: ImageImpl) -> ImageImpl:
