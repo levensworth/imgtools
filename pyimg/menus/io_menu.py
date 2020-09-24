@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from tkinter import Menu, filedialog, messagebox
 
@@ -53,6 +52,8 @@ class ImageIO:
             image = Image.fromarray(raw_image)
         else:
             image = Image.open(file_name)
+            if image.mode == 'RGBA':
+                image = image.convert('RGB')
         # resize the image and apply a high-quality down sampling filter
         image = image.resize((constants.WIDTH, constants.HEIGHT), Image.ANTIALIAS)
         return image
