@@ -5,7 +5,7 @@ from pyimg.config import constants
 from pyimg.menus.operation_interface import (BinaryImageOperation,
                                              UnaryImageOperation,
                                              UnaryWithParamsImageOperation)
-from pyimg.models.image import ImageImpl, border_detection , operators
+from pyimg.models.image import ImageImpl, border_detection, operators
 from pyimg.modules.image_io import display_img, save_img
 
 
@@ -30,7 +30,7 @@ class BorderMenu:
             label="Prewitt operator",
             command=UnaryWithParamsImageOperation(
                 image_io,
-                'Prewitt',
+                "Prewitt",
                 lambda image: linear_adj_image_wrapper(
                     border_detection.prewitt_detector(image)
                 ),
@@ -42,7 +42,7 @@ class BorderMenu:
             label="Sobel operator",
             command=UnaryWithParamsImageOperation(
                 image_io,
-                'Sobel',
+                "Sobel",
                 lambda image: linear_adj_image_wrapper(
                     border_detection.sobel_detector(image)
                 ),
@@ -54,11 +54,11 @@ class BorderMenu:
             label="laplacian operator",
             command=UnaryWithParamsImageOperation(
                 image_io,
-                'laplace',
+                "laplace",
                 lambda image, threshold: linear_adj_image_wrapper(
                     border_detection.laplacian_border_detection(image, threshold)
                 ),
-                params=['threshold'],
+                params=["threshold"],
             ).generate_interface,
         )
 
@@ -66,10 +66,12 @@ class BorderMenu:
             label="gaussian laplacian operator",
             command=UnaryWithParamsImageOperation(
                 image_io,
-                'gauss',
+                "gauss",
                 lambda image, threshold, sigma, kernel_size: linear_adj_image_wrapper(
-                    border_detection.gaussian_laplacian_detection(image, threshold, sigma, kernel_size)
+                    border_detection.gaussian_laplacian_detection(
+                        image, threshold, sigma, kernel_size
+                    )
                 ),
-                params=['threshold', 'sigma', 'kernel_size'],
+                params=["threshold", "sigma", "kernel_size"],
             ).generate_interface,
         )

@@ -133,18 +133,20 @@ class Matrix:
             self.array[:, :, dim] = convolution
 
     def apply_laplacian_change(self, threshold: int, value: float):
-        '''
+        """
         Search vertically and horizontally for sign changes
         :param threshold: this is the minimum absolute change to be acknowledge
         :param value: value to put in places where the threshold is surpass
-        '''
+        """
 
         borders_matrix = np.zeros(self.array.shape)
         for channel in range(self.array.shape[2]):
             for i in range(self.array.shape[0]):
                 for j in range(self.array.shape[1] - 1):
-                    magnitude = abs(self.array[i, j, channel] - self.array[i, j + 1, channel])
-                    sign = self.array[i, j, channel] * self.array[i, j +1, channel]
+                    magnitude = abs(
+                        self.array[i, j, channel] - self.array[i, j + 1, channel]
+                    )
+                    sign = self.array[i, j, channel] * self.array[i, j + 1, channel]
                     if sign >= 0 or magnitude < threshold:
                         # if we are here, it means there is no change in sign
                         borders_matrix[i, j, channel] = 0
@@ -152,7 +154,6 @@ class Matrix:
                         borders_matrix[i, j, channel] = value
 
         self.array = borders_matrix
-
 
     @staticmethod
     def from_array(array):
