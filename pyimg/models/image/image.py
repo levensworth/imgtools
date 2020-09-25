@@ -25,6 +25,9 @@ class ImageImpl(Matrix):
         a_copy = ImageImpl(cpy)
         return a_copy
 
+    def __len__(self):
+        return len(self.array)
+
     def df(self):
         # to make a histogram (count distribution frequency)
         hists = []

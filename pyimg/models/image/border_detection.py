@@ -60,6 +60,7 @@ def laplacian_border_detection(a_img: ImageImpl, threshold: int) -> ImageImpl:
     """
     Detec borders based on the laplacian algorithm
     :param a_img: matrix image representation
+    :param threshold: an integer
     :return: image border mask
     """
 

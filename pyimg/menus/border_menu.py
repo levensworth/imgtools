@@ -1,20 +1,11 @@
-import os
 from tkinter import Menu
 
-from pyimg.config import constants
 from pyimg.menus.operation_interface import (BinaryImageOperation,
                                              UnaryImageOperation,
                                              UnaryWithParamsImageOperation)
-from pyimg.models.image import (ImageImpl, border_detection,
-                                multi_direction_border_detection, operators)
-from pyimg.modules.image_io import display_img, save_img
-
-
-def linear_adj_image_wrapper(image: ImageImpl):
-    adjusted_img = operators.linear_adjustment(image)
-    img = adjusted_img.convert_to_pil()
-    display_img(img)
-    save_img(img, os.path.join(constants.SAVE_PATH, "result_img.jpg"))
+from pyimg.menus.point_operators import display_linear_adj_image_wrapper
+from pyimg.models.image import (border_detection,
+                                multi_direction_border_detection)
 
 
 class BorderMenu:
@@ -32,7 +23,7 @@ class BorderMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Prewitt",
-                lambda image: linear_adj_image_wrapper(
+                lambda image: display_linear_adj_image_wrapper(
                     border_detection.prewitt_detector(image)
                 ),
                 params=[],
@@ -44,7 +35,7 @@ class BorderMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Sobel",
-                lambda image: linear_adj_image_wrapper(
+                lambda image: display_linear_adj_image_wrapper(
                     border_detection.sobel_detector(image)
                 ),
                 params=[],
@@ -52,11 +43,11 @@ class BorderMenu:
         )
 
         filter_menu.add_command(
-            label="laplacian operator",
+            label="Laplacian operator",
             command=UnaryWithParamsImageOperation(
                 image_io,
-                "laplace",
-                lambda image, threshold: linear_adj_image_wrapper(
+                "Laplace",
+                lambda image, threshold: display_linear_adj_image_wrapper(
                     border_detection.laplacian_border_detection(image, threshold)
                 ),
                 params=["threshold"],
@@ -64,11 +55,11 @@ class BorderMenu:
         )
 
         filter_menu.add_command(
-            label="gaussian laplacian operator",
+            label="Gaussian laplacian operator",
             command=UnaryWithParamsImageOperation(
                 image_io,
-                "gauss",
-                lambda image, threshold, sigma, kernel_size: linear_adj_image_wrapper(
+                "Gauss",
+                lambda image, threshold, sigma, kernel_size: display_linear_adj_image_wrapper(
                     border_detection.gaussian_laplacian_detection(
                         image, threshold, sigma, kernel_size
                     )
@@ -82,7 +73,7 @@ class BorderMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Prewitt",
-                lambda image: linear_adj_image_wrapper(
+                lambda image: display_linear_adj_image_wrapper(
                     multi_direction_border_detection.prewitt_border_detection(image)
                 ),
                 params=[],
@@ -94,7 +85,7 @@ class BorderMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Sobel",
-                lambda image: linear_adj_image_wrapper(
+                lambda image: display_linear_adj_image_wrapper(
                     multi_direction_border_detection.sobel_border_detection(image)
                 ),
                 params=[],
@@ -106,7 +97,7 @@ class BorderMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "ITBA",
-                lambda image: linear_adj_image_wrapper(
+                lambda image: display_linear_adj_image_wrapper(
                     multi_direction_border_detection.itba_border_detection(image)
                 ),
                 params=[],
@@ -118,7 +109,7 @@ class BorderMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Kirish",
-                lambda image: linear_adj_image_wrapper(
+                lambda image: display_linear_adj_image_wrapper(
                     multi_direction_border_detection.kirish_border_detection(image)
                 ),
                 params=[],
