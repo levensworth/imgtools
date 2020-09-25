@@ -47,10 +47,10 @@ class BorderMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Laplace",
-                lambda image, threshold: display_linear_adj_image_wrapper(
-                    border_detection.laplacian_border_detection(image, threshold)
+                lambda image: display_linear_adj_image_wrapper(
+                    border_detection.laplacian_border_detection(image)
                 ),
-                params=["threshold"],
+                params=[],
             ).generate_interface,
         )
 

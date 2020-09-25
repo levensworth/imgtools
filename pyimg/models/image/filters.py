@@ -4,7 +4,6 @@ from copy import copy
 import numpy as np
 import scipy.stats as st
 from scipy import ndimage
-from skimage.restoration import denoise_bilateral
 
 from pyimg.config.constants import MAX_PIXEL_VALUE
 from pyimg.models.image import ImageImpl

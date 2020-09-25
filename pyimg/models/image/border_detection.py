@@ -56,11 +56,10 @@ def sobel_detector(a_img: ImageImpl) -> ImageImpl:
     return grad_img
 
 
-def laplacian_border_detection(a_img: ImageImpl, threshold: int) -> ImageImpl:
+def laplacian_border_detection(a_img: ImageImpl) -> ImageImpl:
     """
     Detec borders based on the laplacian algorithm
     :param a_img: matrix image representation
-    :param threshold: an integer
     :return: image border mask
     """
 
@@ -68,10 +67,6 @@ def laplacian_border_detection(a_img: ImageImpl, threshold: int) -> ImageImpl:
     # compute mask
     grad_img = copy(a_img)
     grad_img.convolution_fast(laplacian_operator)
-
-    # search for gradient changes
-    threshold = int(threshold)
-    grad_img.apply_laplacian_change(threshold, MAX_PIXEL_VALUE)
 
     return grad_img
 
