@@ -49,13 +49,9 @@ class Matrix:
 
         padded_matrix = self._apply_padding(padding)
         for channel in range(padded_matrix.shape[-1]):
-            for index, _ in np.ndenumerate(self.array):
-                try:
-                    # case 3d image
-                    i, j, _ = index
-                except ValueError:
-                    # case 2d image
-                    i, j = index
+            for index, _ in np.ndenumerate(self.array[:, :, channel]):
+                # case 3d image
+                i, j = index
                 val = fn(
                     self._get_window(
                         padded_matrix[:, :, channel],
@@ -64,7 +60,7 @@ class Matrix:
                         kernel_size,
                     )
                 )
-                self.array[i, j] = val
+                self.array[i, j, channel] = val
 
     def _get_window(
         self, matrix, height: int, width: int, kernel_size: int

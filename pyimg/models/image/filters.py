@@ -3,6 +3,7 @@ import math
 import numpy as np
 import scipy.stats as st
 from scipy import ndimage
+from skimage.restoration import denoise_bilateral
 
 from pyimg.config.constants import MAX_PIXEL_VALUE
 from pyimg.models.image import ImageImpl
@@ -251,12 +252,62 @@ def bilateral_filter(a_img: ImageImpl, kernel_size: int, sigma_s: float, sigma_r
     :param sigma_r: sigma_r value
     :return: transformed image
     """
+
+    img_in = a_img.get_array()
+
+    if a_img.channels == 1:
+        img_in = img_in[:, :, 0]
+
+    gaussian = lambda r2, sigma: (np.exp( -0.5*r2/sigma**2 )*3).astype(int)*1.0/3.0
+
+    # define the window width to be the 3 time the spatial std. dev. to
+    # be sure that most of the spatial kernel is actually captured
+    win_width = int(kernel_size)
+
+    # initialize the results and sum of weights to very small values for
+    # numerical stability. not strictly necessary but helpful to avoid
+    # wild values with pathological choices of parameters
+    reg_constant = 1e-8
+    wgt_sum = np.ones( img_in.shape )*reg_constant
+    result  = img_in*reg_constant
+
+    # accumulate the result by circularly shifting the image across the
+    # window in the horizontal and vertical directions. within the inner
+    # loop, calculate the two weights and accumulate the weight sum and
+    # the unnormalized result image
+    for shft_x in range(-win_width,win_width+1):
+        for shft_y in range(-win_width,win_width+1):
+            # compute the spatial weight
+            w = gaussian( shft_x**2+shft_y**2, sigma_s )
+
+            # shift by the offsets
+            off = np.roll(img_in, [shft_y, shft_x], axis=[0,1] )
+
+            # compute the value weight
+            tw = w*gaussian( (off-img_in)**2, sigma_r )
+
+            # accumulate the results
+            result += off*tw
+            wgt_sum += tw
+
+    # normalize the result and return
+
+    out = result/wgt_sum
+    dims = len(out.shape)
+    out = (
+        np.expand_dims(out, axis=dims) if dims == 2 else out
+    )
+
+    return ImageImpl.from_array(out)
+"""
+
     a_img.convolution(
         kernel_size,
         lambda window: _apply_bilateral_filter(window, int(kernel_size), sigma_s, sigma_r),
     )
 
     return a_img
+"""
 
 
 def _apply_bilateral_filter(window: np.ndarray, kernerl_size: int, sigma_s: float, sigma_r: float):
