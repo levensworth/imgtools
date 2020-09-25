@@ -8,9 +8,8 @@ from pyimg.menus.point_operators import display_linear_adj_image_wrapper
 from pyimg.models.image import thresholding, ImageImpl
 
 
-def display_result(image: ImageImpl):
-    img, thresholds = thresholding.otsu_thresholding(image)
-    display_linear_adj_image_wrapper(img)
+def display_result(image: ImageImpl, thresholds: list):
+    display_linear_adj_image_wrapper(image)
 
     text_window = tk.Tk()
     message = tk.Text(text_window, height=4, width=50, font=("Helvetica", 20))
@@ -41,7 +40,9 @@ class ThresholdMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Global",
-                display_result,
+                lambda image: display_result(
+                    *thresholding.global_thresholding(image)
+                ),
                 params=[],
             ).generate_interface,
         )
@@ -51,7 +52,9 @@ class ThresholdMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Otsu",
-                display_result,
+                lambda image: display_result(
+                    *thresholding.otsu_thresholding(image)
+                ),
                 params=[],
             ).generate_interface,
         )
