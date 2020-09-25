@@ -73,10 +73,9 @@ class BorderMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Prewitt",
-                lambda image: display_linear_adj_image_wrapper(
-                    multi_direction_border_detection.prewitt_border_detection(image)
-                ),
-                params=[],
+                lambda image, rotation_angle: display_linear_adj_image_wrapper(
+                    multi_direction_border_detection.prewitt_border_detection(image, rotation_angle)),
+                params=['rotation_angle'],
             ).generate_interface,
         )
 
@@ -85,10 +84,9 @@ class BorderMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Sobel",
-                lambda image: display_linear_adj_image_wrapper(
-                    multi_direction_border_detection.sobel_border_detection(image)
-                ),
-                params=[],
+                lambda image, rotation_angle: display_linear_adj_image_wrapper(
+                    multi_direction_border_detection.sobel_border_detection(image, rotation_angle)),
+                params=['rotation_angle'],
             ).generate_interface,
         )
 
@@ -97,10 +95,9 @@ class BorderMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "ITBA",
-                lambda image: display_linear_adj_image_wrapper(
-                    multi_direction_border_detection.itba_border_detection(image)
-                ),
-                params=[],
+                lambda image, rotation_angle: display_linear_adj_image_wrapper(
+                    multi_direction_border_detection.itba_border_detection(image, rotation_angle)),
+                params=['rotation_angle'],
             ).generate_interface,
         )
 
@@ -109,9 +106,8 @@ class BorderMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Kirish",
-                lambda image: display_linear_adj_image_wrapper(
-                    multi_direction_border_detection.kirish_border_detection(image)
-                ),
-                params=[],
+                lambda image, rotation_angle: display_linear_adj_image_wrapper(
+                    multi_direction_border_detection.kirish_border_detection(image, rotation_angle)),
+                params=['rotation_angle'],
             ).generate_interface,
         )

@@ -1,4 +1,5 @@
 import math
+from copy import copy
 
 import numpy as np
 import scipy.stats as st
@@ -6,6 +7,9 @@ from scipy import ndimage
 
 from pyimg.config.constants import MAX_PIXEL_VALUE
 from pyimg.models.image import ImageImpl
+
+import numpy as np
+from medpy.filter.smoothing import anisotropic_diffusion as ansio_dif
 
 
 def mean_filter(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
@@ -241,6 +245,78 @@ def threshold_filter(a_img: ImageImpl, threshold: float) -> ImageImpl:
     return a_img
 
 
+def isotropic_diffusion(a_img: ImageImpl, max_scale) -> ImageImpl:
+    sigma = 3
+    new_img = copy(a_img)
+    for scale in range(0, int(max_scale)):
+        kernel_size = int(sigma * 2 + 1)
+        new_img = new_img.add(gaussian_filter_fast(a_img, kernel_size, sigma))
+    return new_img
+
+
+def anisotropic_diffusion(a_img: ImageImpl, max_scale, sigma) -> ImageImpl:
+    new_img = copy(a_img)
+    for scale in range(0, int(max_scale)):
+        kernel_size = int(sigma * 2 + 1)
+        new_img = new_img.add(gaussian_filter_fast(a_img, kernel_size, sigma))
+    new_img.array = _leclerc_coefficient(new_img.array, sigma)
+    return a_img
+
+
+def _leclerc_coefficient(x, sigma):
+    x = -(x ** 2) * (1 / (sigma ** 2))
+    return np.exp(x)
+
+
+def anisotropic_diffusion_ugly(a_img: ImageImpl, max_scale, sigma) -> ImageImpl:
+    new_image = np.zeros(a_img.array.shape)
+    window_size = 5
+    window_y_center = int(window_size / 2)
+    window_x_center = int(window_size / 2)
+    for channel in range(a_img.channels):
+        pixels = np.array(a_img.array[:, :, channel])
+        for t in range(0, int(max_scale)):
+            for y in range(window_y_center, a_img.array.shape[0] - window_y_center):
+                for x in range(window_x_center, a_img.array.shape[1] - window_x_center):
+                    new_image[y, x, channel] = get_diffusion_value(pixels, x, y, sigma, True)
+            pixels = new_image
+
+    return ImageImpl(new_image)
+
+
+def get_diffusion_value(pixels, x, y, sigma, calculate_coefficient=True):
+    lambda_value = 0.25
+    north_derivative = int(pixels[y + 1, x]) - int(pixels[y, x])
+    south_derivative = int(pixels[y - 1, x]) - int(pixels[y, x])
+    west_derivative = int(pixels[y, x + 1]) - int(pixels[y, x])
+    east_derivative = int(pixels[y, x - 1]) - int(pixels[y, x])
+    if calculate_coefficient:
+        north_coefficient = _lorentz(north_derivative, sigma)
+        south_coefficient = _lorentz(south_derivative, sigma)
+        west_coefficient = _lorentz(west_derivative, sigma)
+        east_coefficient = _lorentz(east_derivative, sigma)
+    else:
+        north_coefficient = 1
+        south_coefficient = 1
+        west_coefficient = 1
+        east_coefficient = 1
+
+    return pixels[y, x] + lambda_value * (north_derivative * north_coefficient + south_derivative * south_coefficient +
+                                          west_derivative * west_coefficient + east_derivative * east_coefficient)
+
+
+def get_leclerc_coefficient(x, sigma):
+    return math.exp(-(x * x) / (sigma * sigma))
+
+
+def _lorentz(x, sigma):
+    return 1/ ((x ** 2/ sigma ** 2) + 1)
+
+
+def anisotropic_diffusion_(a_img: ImageImpl, max_scale, sigma) -> ImageImpl:
+    return ImageImpl(ansio_dif(a_img.array, int(max_scale), gamma=sigma))
+
+
 def bilateral_filter(a_img: ImageImpl, kernel_size: int, sigma_s: float, sigma_r: float) -> ImageImpl:
     """
     Given an Image instance, apply the bilateral filter
@@ -309,13 +385,13 @@ def bilateral_filter(a_img: ImageImpl, kernel_size: int, sigma_s: float, sigma_r
 """
 
 
-def _apply_bilateral_filter(window: np.ndarray, kernerl_size: int, sigma_s: float, sigma_r: float):
-    sliding_window = np.zeros((kernerl_size, kernerl_size))
+def _apply_bilateral_filter(window: np.ndarray, kernel_size: int, sigma_s: float, sigma_r: float):
+    sliding_window = np.zeros((kernel_size, kernel_size))
     wp = 0
-    for i in range(0, kernerl_size):
-        for j in range(0, kernerl_size):
-            y_center = int(kernerl_size / 2)
-            x_center = int(kernerl_size / 2)
+    for i in range(0, kernel_size):
+        for j in range(0, kernel_size):
+            y_center = int(kernel_size / 2)
+            x_center = int(kernel_size / 2)
             k = i - y_center
             l = j - x_center
             gaussian_value = -(pow(y_center - k, 2) + pow(x_center - l, 2)) / (2 * sigma_s * sigma_s)
