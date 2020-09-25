@@ -4,7 +4,7 @@ import numpy as np
 import scipy.stats as st
 from scipy import ndimage
 
-from pyimg.config.constants import MAX_PIXEL_VALUE, MIN_PIXEL_VALUE
+from pyimg.config.constants import MAX_PIXEL_VALUE
 from pyimg.models.image import ImageImpl
 
 
@@ -239,3 +239,39 @@ def threshold_filter(a_img: ImageImpl, threshold: float) -> ImageImpl:
     a_img.array = a_img.array.astype(int) * MAX_PIXEL_VALUE
 
     return a_img
+
+
+def bilateral_filter(a_img: ImageImpl, kernel_size: int, sigma_s: float, sigma_r: float) -> ImageImpl:
+    """
+    Given an Image instance, apply the bilateral filter
+    kernel_size.
+    :param a_img: Image instance
+    :param kernel_size: kernel size int
+    :param sigma_s: sigma_s value
+    :param sigma_r: sigma_r value
+    :return: transformed image
+    """
+    a_img.convolution(
+        kernel_size,
+        lambda window: _apply_bilateral_filter(window, int(kernel_size), sigma_s, sigma_r),
+    )
+
+    return a_img
+
+
+def _apply_bilateral_filter(window: np.ndarray, kernerl_size: int, sigma_s: float, sigma_r: float):
+    sliding_window = np.zeros((kernerl_size, kernerl_size))
+    wp = 0
+    for i in range(0, kernerl_size):
+        for j in range(0, kernerl_size):
+            y_center = int(kernerl_size / 2)
+            x_center = int(kernerl_size / 2)
+            k = i - y_center
+            l = j - x_center
+            gaussian_value = -(pow(y_center - k, 2) + pow(x_center - l, 2)) / (2 * sigma_s * sigma_s)
+            r_value = -(pow(abs(int(window[y_center, x_center]) - int(window[i, j])), 2) /
+                        (2 * sigma_r * sigma_r))
+            sliding_window[i, j] = math.exp(gaussian_value + r_value)
+            wp += sliding_window[i, j]
+    sliding_window = sliding_window / wp
+    return np.sum(window * sliding_window)

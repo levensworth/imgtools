@@ -83,3 +83,14 @@ class FilterMenu:
                 params=["threshold"],
             ).generate_interface,
         )
+        filter_menu.add_command(
+            label="Bilateral Filter",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Bilateral",
+                lambda image, sigma_s, sigma_r, kernel_size: display_linear_adj_image_wrapper(
+                    filters.bilateral_filter(image, kernel_size, sigma_s, sigma_r)
+                ),
+                params=["sigma_s", "sigma_r", "kernel_size"],
+            ).generate_interface,
+        )
