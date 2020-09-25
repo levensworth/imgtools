@@ -17,7 +17,9 @@ def global_thresholding(image: ImageImpl) -> (ImageImpl, list):
             last_t = current_t
             current_t = _calculate_global_threshold(img_array[:, :, c], last_t)
 
-        img_binary.append(_array_binarize(img_array[:, :, c], current_t) * constants.MAX_PIXEL_VALUE)
+        img_binary.append(
+            _array_binarize(img_array[:, :, c], current_t) * constants.MAX_PIXEL_VALUE
+        )
         t.append(int(current_t))
 
     return ImageImpl.from_array(np.moveaxis(np.array(img_binary), 0, 2)), t
@@ -51,7 +53,9 @@ def otsu_thresholding(image: ImageImpl):
 
         variances = _compute_variance(global_means, means, prob_sumcum)
         threshold = _get_threshold_from_variance(variances)
-        img_binary.append(_array_binarize(img_array[:, :, c], threshold) * constants.MAX_PIXEL_VALUE)
+        img_binary.append(
+            _array_binarize(img_array[:, :, c], threshold) * constants.MAX_PIXEL_VALUE
+        )
         t.append(threshold)
 
     return ImageImpl.from_array(np.moveaxis(np.array(img_binary), 0, 2)), t
@@ -75,7 +79,9 @@ def _compute_global_mean(prob: np.ndarray) -> float:
     return global_media
 
 
-def _compute_variance(global_mean: float, means: np.ndarray, prob_sumcum: np.ndarray) -> np.ndarray:
+def _compute_variance(
+    global_mean: float, means: np.ndarray, prob_sumcum: np.ndarray
+) -> np.ndarray:
     variances = np.zeros(constants.PIXEL_RANGE)
     for t in range(0, constants.PIXEL_RANGE):
         if int(prob_sumcum[t] == 0) or int(prob_sumcum[t]) == 1:

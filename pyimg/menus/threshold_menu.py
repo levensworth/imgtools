@@ -5,7 +5,7 @@ from pyimg.menus.operation_interface import (BinaryImageOperation,
                                              UnaryImageOperation,
                                              UnaryWithParamsImageOperation)
 from pyimg.menus.point_operators import display_linear_adj_image_wrapper
-from pyimg.models.image import thresholding, ImageImpl
+from pyimg.models.image import ImageImpl, thresholding
 
 
 def display_result(image: ImageImpl, thresholds: list):
@@ -16,11 +16,11 @@ def display_result(image: ImageImpl, thresholds: list):
     message.pack()
 
     if image.channels == 3:
-        text = 'Computed Thresholds: R: {}, G: {}, B: {}'.format(thresholds[0],
-                                                                 thresholds[1],
-                                                                 thresholds[2])
+        text = "Computed Thresholds: R: {}, G: {}, B: {}".format(
+            thresholds[0], thresholds[1], thresholds[2]
+        )
     else:
-        text = 'Computed Threshold: {}'. format(thresholds[0])
+        text = "Computed Threshold: {}".format(thresholds[0])
     message.insert(tk.END, text)
     text_window.mainloop()
 
@@ -40,9 +40,7 @@ class ThresholdMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Global",
-                lambda image: display_result(
-                    *thresholding.global_thresholding(image)
-                ),
+                lambda image: display_result(*thresholding.global_thresholding(image)),
                 params=[],
             ).generate_interface,
         )
@@ -52,9 +50,7 @@ class ThresholdMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Otsu",
-                lambda image: display_result(
-                    *thresholding.otsu_thresholding(image)
-                ),
+                lambda image: display_result(*thresholding.otsu_thresholding(image)),
                 params=[],
             ).generate_interface,
         )

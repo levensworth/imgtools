@@ -31,7 +31,9 @@ class PointOperatorMenu:
             command=BinaryImageOperation(
                 image_io,
                 "Add",
-                lambda x, y: display_linear_adj_image_wrapper(ImageImpl.add_matrix(x, y)),
+                lambda x, y: display_linear_adj_image_wrapper(
+                    ImageImpl.add_matrix(x, y)
+                ),
             ).generate_interface,
         )
 
@@ -40,7 +42,9 @@ class PointOperatorMenu:
             command=BinaryImageOperation(
                 image_io,
                 "Sub",
-                lambda x, y: display_linear_adj_image_wrapper(ImageImpl.sub_matrix(x, y)),
+                lambda x, y: display_linear_adj_image_wrapper(
+                    ImageImpl.sub_matrix(x, y)
+                ),
             ).generate_interface,
         )
 
@@ -49,7 +53,9 @@ class PointOperatorMenu:
             command=BinaryImageOperation(
                 image_io,
                 "Mul",
-                lambda x, y: display_linear_adj_image_wrapper(ImageImpl.mul_matrix(x, y)),
+                lambda x, y: display_linear_adj_image_wrapper(
+                    ImageImpl.mul_matrix(x, y)
+                ),
             ).generate_interface,
         )
 
@@ -94,7 +100,9 @@ class PointOperatorMenu:
             command=UnaryImageOperation(
                 image_io,
                 "Neg",
-                lambda x: display_linear_adj_image_wrapper(operators.negative_img_fun(x)),
+                lambda x: display_linear_adj_image_wrapper(
+                    operators.negative_img_fun(x)
+                ),
             ).generate_interface,
         )
         single_img_menu.add_command(
@@ -102,6 +110,8 @@ class PointOperatorMenu:
             command=UnaryImageOperation(
                 image_io,
                 "Equ",
-                lambda x: display_linear_adj_image_wrapper(operators.histogram_equalization(x)),
+                lambda x: display_linear_adj_image_wrapper(
+                    operators.histogram_equalization(x)
+                ),
             ).generate_interface,
         )

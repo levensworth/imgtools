@@ -100,7 +100,7 @@ class FilterMenu:
                 image_io,
                 "Anisotropic",
                 lambda image, max_scale, sigma: display_linear_adj_image_wrapper(
-                    filters.anisotropic_diffusion_(image, max_scale, sigma)
+                    filters.anisodiff(image, max_scale, sigma)
                 ),
                 params=["max_scale", "sigma"],
             ).generate_interface,

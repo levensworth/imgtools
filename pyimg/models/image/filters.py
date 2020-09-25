@@ -3,13 +3,11 @@ from copy import copy
 
 import numpy as np
 import scipy.stats as st
+from medpy.filter.smoothing import anisotropic_diffusion as ansio_dif
 from scipy import ndimage
 
 from pyimg.config.constants import MAX_PIXEL_VALUE
 from pyimg.models.image import ImageImpl
-
-import numpy as np
-from medpy.filter.smoothing import anisotropic_diffusion as ansio_dif
 
 
 def mean_filter(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
@@ -254,70 +252,47 @@ def isotropic_diffusion(a_img: ImageImpl, max_scale) -> ImageImpl:
     return new_img
 
 
-def anisotropic_diffusion(a_img: ImageImpl, max_scale, sigma) -> ImageImpl:
-    new_img = copy(a_img)
-    for scale in range(0, int(max_scale)):
-        kernel_size = int(sigma * 2 + 1)
-        new_img = new_img.add(gaussian_filter_fast(a_img, kernel_size, sigma))
-    new_img.array = _leclerc_coefficient(new_img.array, sigma)
-    return a_img
+def leclerc_coef(lam, b):
+    return np.exp(-1 * (np.power(lam, 2)) / (np.power(b, 2)))
 
 
-def _leclerc_coefficient(x, sigma):
-    x = -(x ** 2) * (1 / (sigma ** 2))
-    return np.exp(x)
+def anisodiff(a_img: ImageImpl, steps, b) -> ImageImpl:
+    """
+    Given an image implementation, calculates the ansiotropic filter as described in the paper by Perona- Malik et al.
+
+    :param a_img: image matrix representation
+    :param steps: the number of iterations to apply the mask
+    :param b: the leclerc coefficient hyper parameter
+    :return: ImageImpl
+    """
+
+    lam = 0.25
+    # convert to int
+    steps = int(steps)
+    im = a_img.array
+
+    im_new = np.zeros(im.shape, dtype=im.dtype)
+    for t in range(steps):
+        # calculate the gradient with respect to each cardinal direction
+        # the sneaky way is to get get the far right sub matrix (without the last
+        # row and subtract the far left one, and the do the same for all other directions.
+        dn = im[:-2, 1:-1] - im[1:-1, 1:-1]
+        ds = im[2:, 1:-1] - im[1:-1, 1:-1]
+        de = im[1:-1, 2:] - im[1:-1, 1:-1]
+        dw = im[1:-1, :-2] - im[1:-1, 1:-1]
+        im_new[1:-1, 1:-1] = im[1:-1, 1:-1] + lam * (
+            leclerc_coef(dn, b) * dn
+            + leclerc_coef(ds, b) * ds
+            + leclerc_coef(de, b) * de
+            + leclerc_coef(dw, b) * dw
+        )
+        im = im_new
+    return ImageImpl(im)
 
 
-def anisotropic_diffusion_ugly(a_img: ImageImpl, max_scale, sigma) -> ImageImpl:
-    new_image = np.zeros(a_img.array.shape)
-    window_size = 5
-    window_y_center = int(window_size / 2)
-    window_x_center = int(window_size / 2)
-    for channel in range(a_img.channels):
-        pixels = np.array(a_img.array[:, :, channel])
-        for t in range(0, int(max_scale)):
-            for y in range(window_y_center, a_img.array.shape[0] - window_y_center):
-                for x in range(window_x_center, a_img.array.shape[1] - window_x_center):
-                    new_image[y, x, channel] = get_diffusion_value(pixels, x, y, sigma, True)
-            pixels = new_image
-
-    return ImageImpl(new_image)
-
-
-def get_diffusion_value(pixels, x, y, sigma, calculate_coefficient=True):
-    lambda_value = 0.25
-    north_derivative = int(pixels[y + 1, x]) - int(pixels[y, x])
-    south_derivative = int(pixels[y - 1, x]) - int(pixels[y, x])
-    west_derivative = int(pixels[y, x + 1]) - int(pixels[y, x])
-    east_derivative = int(pixels[y, x - 1]) - int(pixels[y, x])
-    if calculate_coefficient:
-        north_coefficient = _lorentz(north_derivative, sigma)
-        south_coefficient = _lorentz(south_derivative, sigma)
-        west_coefficient = _lorentz(west_derivative, sigma)
-        east_coefficient = _lorentz(east_derivative, sigma)
-    else:
-        north_coefficient = 1
-        south_coefficient = 1
-        west_coefficient = 1
-        east_coefficient = 1
-
-    return pixels[y, x] + lambda_value * (north_derivative * north_coefficient + south_derivative * south_coefficient +
-                                          west_derivative * west_coefficient + east_derivative * east_coefficient)
-
-
-def get_leclerc_coefficient(x, sigma):
-    return math.exp(-(x * x) / (sigma * sigma))
-
-
-def _lorentz(x, sigma):
-    return 1/ ((x ** 2/ sigma ** 2) + 1)
-
-
-def anisotropic_diffusion_(a_img: ImageImpl, max_scale, sigma) -> ImageImpl:
-    return ImageImpl(ansio_dif(a_img.array, int(max_scale), gamma=sigma))
-
-
-def bilateral_filter(a_img: ImageImpl, kernel_size: int, sigma_s: float, sigma_r: float) -> ImageImpl:
+def bilateral_filter(
+    a_img: ImageImpl, kernel_size: int, sigma_s: float, sigma_r: float
+) -> ImageImpl:
     """
     Given an Image instance, apply the bilateral filter
     kernel_size.
@@ -333,7 +308,9 @@ def bilateral_filter(a_img: ImageImpl, kernel_size: int, sigma_s: float, sigma_r
     if a_img.channels == 1:
         img_in = img_in[:, :, 0]
 
-    gaussian = lambda r2, sigma: (np.exp( -0.5*r2/sigma**2 )*3).astype(int)*1.0/3.0
+    gaussian = (
+        lambda r2, sigma: (np.exp(-0.5 * r2 / sigma ** 2) * 3).astype(int) * 1.0 / 3.0
+    )
 
     # define the window width to be the 3 time the spatial std. dev. to
     # be sure that most of the spatial kernel is actually captured
@@ -343,37 +320,37 @@ def bilateral_filter(a_img: ImageImpl, kernel_size: int, sigma_s: float, sigma_r
     # numerical stability. not strictly necessary but helpful to avoid
     # wild values with pathological choices of parameters
     reg_constant = 1e-8
-    wgt_sum = np.ones( img_in.shape )*reg_constant
-    result  = img_in*reg_constant
+    wgt_sum = np.ones(img_in.shape) * reg_constant
+    result = img_in * reg_constant
 
     # accumulate the result by circularly shifting the image across the
     # window in the horizontal and vertical directions. within the inner
     # loop, calculate the two weights and accumulate the weight sum and
     # the unnormalized result image
-    for shft_x in range(-win_width,win_width+1):
-        for shft_y in range(-win_width,win_width+1):
+    for shft_x in range(-win_width, win_width + 1):
+        for shft_y in range(-win_width, win_width + 1):
             # compute the spatial weight
-            w = gaussian( shft_x**2+shft_y**2, sigma_s )
+            w = gaussian(shft_x ** 2 + shft_y ** 2, sigma_s)
 
             # shift by the offsets
-            off = np.roll(img_in, [shft_y, shft_x], axis=[0,1] )
+            off = np.roll(img_in, [shft_y, shft_x], axis=[0, 1])
 
             # compute the value weight
-            tw = w*gaussian( (off-img_in)**2, sigma_r )
+            tw = w * gaussian((off - img_in) ** 2, sigma_r)
 
             # accumulate the results
-            result += off*tw
+            result += off * tw
             wgt_sum += tw
 
     # normalize the result and return
 
-    out = result/wgt_sum
+    out = result / wgt_sum
     dims = len(out.shape)
-    out = (
-        np.expand_dims(out, axis=dims) if dims == 2 else out
-    )
+    out = np.expand_dims(out, axis=dims) if dims == 2 else out
 
     return ImageImpl.from_array(out)
+
+
 """
 
     a_img.convolution(
@@ -385,7 +362,9 @@ def bilateral_filter(a_img: ImageImpl, kernel_size: int, sigma_s: float, sigma_r
 """
 
 
-def _apply_bilateral_filter(window: np.ndarray, kernel_size: int, sigma_s: float, sigma_r: float):
+def _apply_bilateral_filter(
+    window: np.ndarray, kernel_size: int, sigma_s: float, sigma_r: float
+):
     sliding_window = np.zeros((kernel_size, kernel_size))
     wp = 0
     for i in range(0, kernel_size):
@@ -394,9 +373,13 @@ def _apply_bilateral_filter(window: np.ndarray, kernel_size: int, sigma_s: float
             x_center = int(kernel_size / 2)
             k = i - y_center
             l = j - x_center
-            gaussian_value = -(pow(y_center - k, 2) + pow(x_center - l, 2)) / (2 * sigma_s * sigma_s)
-            r_value = -(pow(abs(int(window[y_center, x_center]) - int(window[i, j])), 2) /
-                        (2 * sigma_r * sigma_r))
+            gaussian_value = -(pow(y_center - k, 2) + pow(x_center - l, 2)) / (
+                2 * sigma_s * sigma_s
+            )
+            r_value = -(
+                pow(abs(int(window[y_center, x_center]) - int(window[i, j])), 2)
+                / (2 * sigma_r * sigma_r)
+            )
             sliding_window[i, j] = math.exp(gaussian_value + r_value)
             wp += sliding_window[i, j]
     sliding_window = sliding_window / wp
