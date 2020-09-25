@@ -9,20 +9,20 @@ from .kernels import *
 ROTATIONS = [0, 45, 90]
 
 
-def itba_border_detection(a_img: ImageImpl) -> ImageImpl:
-    return rotate_border_detection(a_img, ITBA, [0, 90])
+def itba_border_detection(a_img: ImageImpl, rotation) -> ImageImpl:
+    return rotate_border_detection(a_img, ITBA, [int(rotation)])
 
 
-def prewitt_border_detection(a_img: ImageImpl) -> ImageImpl:
-    return rotate_border_detection(a_img, PREWITT, ROTATIONS)
+def prewitt_border_detection(a_img: ImageImpl, rotation) -> ImageImpl:
+    return rotate_border_detection(a_img, PREWITT, [int(rotation)])
 
 
-def sobel_border_detection(a_img: ImageImpl) -> ImageImpl:
-    return rotate_border_detection(a_img, SOBEL, [0, 90])
+def sobel_border_detection(a_img: ImageImpl, rotation) -> ImageImpl:
+    return rotate_border_detection(a_img, SOBEL, [int(rotation)])
 
 
-def kirish_border_detection(a_img: ImageImpl) -> ImageImpl:
-    return rotate_border_detection(a_img, KIRISH, ROTATIONS)
+def kirish_border_detection(a_img: ImageImpl, rotation) -> ImageImpl:
+    return rotate_border_detection(a_img, KIRISH, [int(rotation)])
 
 
 def rotate_border_detection(a_img: ImageImpl, kernel, rotations) -> ImageImpl:

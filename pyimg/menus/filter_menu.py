@@ -84,6 +84,28 @@ class FilterMenu:
             ).generate_interface,
         )
         filter_menu.add_command(
+            label="Isotropic diffusion Filter",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Isotropic",
+                lambda image, max_scale: display_linear_adj_image_wrapper(
+                    filters.isotropic_diffusion(image, max_scale)
+                ),
+                params=["max_scale"],
+            ).generate_interface,
+        )
+        filter_menu.add_command(
+            label="Anisotropic diffusion Filter",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Anisotropic",
+                lambda image, max_scale, sigma: display_linear_adj_image_wrapper(
+                    filters.anisotropic_diffusion_(image, max_scale, sigma)
+                ),
+                params=["max_scale", "sigma"],
+            ).generate_interface,
+        )
+        filter_menu.add_command(
             label="Bilateral Filter",
             command=UnaryWithParamsImageOperation(
                 image_io,
