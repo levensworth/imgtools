@@ -84,4 +84,8 @@ def gaussian_laplacian_detection(
 
     grad_img = gaussian_filter_fast(a_img, kernel_size, sigma)
 
-    return laplacian_border_detection(grad_img)
+    img = laplacian_border_detection(grad_img)
+
+    img.apply_laplacian_change(threshold, MAX_PIXEL_VALUE)
+
+    return img
