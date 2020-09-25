@@ -29,10 +29,11 @@ class ImageIO:
         image_matrix = (
             np.expand_dims(image_matrix, axis=dims) if dims == 2 else image_matrix
         )
+        img = ImageImpl(image_matrix)
 
-        self.interface.images.append(ImageImpl(image_matrix))
+        self.interface.images.append(img)
 
-        return ImageImpl(image_matrix)
+        return img
 
     def full_save_image(self):
         if self.interface.result_image is None:

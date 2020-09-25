@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 from PIL import Image
 
@@ -21,7 +23,7 @@ class ImageImpl(Matrix):
         return np.uint8(np.round(self.array))
 
     def __copy__(self):
-        cpy = np.copy(self.array)
+        cpy = copy.deepcopy(self.array)
         a_copy = ImageImpl(cpy)
         return a_copy
 

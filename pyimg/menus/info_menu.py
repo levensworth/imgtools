@@ -24,7 +24,6 @@ def plot_hist(image: ImageImpl):
                 color=color[i],
             )
             plt.xlabel("Intensity Value")
-            plt.ylabel("Count")
             plt.legend([legends[i]])
             plt.title("Histogram for " + legends[i])
 
@@ -38,7 +37,6 @@ def plot_hist(image: ImageImpl):
             )
 
         plt.xlabel("Intensity Value")
-        plt.ylabel("Count")
         plt.legend(legends)
         plt.show()
     else:
@@ -49,7 +47,6 @@ def plot_hist(image: ImageImpl):
             weights=np.zeros_like(image.array).ravel() + 1.0 / image.array.size,
         )
         plt.xlabel("Intensity Value")
-        plt.ylabel("Count")
         plt.legend("Gray scale")
         plt.show()
 

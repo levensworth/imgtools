@@ -23,7 +23,8 @@ class ImageOperationInput:
             image_button.grid(row=row, column=column)
 
     def get_input(self):
-        return tuple(self.interface.images)
+        images_copy = [img.__copy__() for img in self.interface.images]
+        return tuple(images_copy)
 
 
 class ImageOperation(ABC):

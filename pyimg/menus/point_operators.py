@@ -1,8 +1,5 @@
-import datetime
-import os
 from tkinter import Menu
 
-from pyimg.config import constants
 from pyimg.menus.operation_interface import (BinaryImageOperation,
                                              UnaryImageOperation,
                                              UnaryWithParamsImageOperation)
@@ -14,12 +11,6 @@ def display_linear_adj_image_wrapper(image: ImageImpl):
     adjusted_img = operators.linear_adjustment(image)
     img = adjusted_img.convert_to_pil()
     display_img(img)
-    save_img(
-        img,
-        os.path.join(
-            constants.SAVE_PATH, "result_img " + str(datetime.datetime.now()) + ".jpg"
-        ),
-    )
 
 
 class PointOperatorMenu:
