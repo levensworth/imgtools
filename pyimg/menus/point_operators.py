@@ -1,27 +1,16 @@
-import datetime
-import os
 from tkinter import Menu
 
-from pyimg.config import constants
-from pyimg.menus.operation_interface import (
-    BinaryImageOperation,
-    UnaryImageOperation,
-    UnaryWithParamsImageOperation,
-)
+from pyimg.menus.operation_interface import (BinaryImageOperation,
+                                             UnaryImageOperation,
+                                             UnaryWithParamsImageOperation)
 from pyimg.models.image import ImageImpl, operators
 from pyimg.modules.image_io import display_img, save_img
 
 
-def linear_adj_image_wrapper(image: ImageImpl):
+def display_linear_adj_image_wrapper(image: ImageImpl):
     adjusted_img = operators.linear_adjustment(image)
     img = adjusted_img.convert_to_pil()
     display_img(img)
-    save_img(
-        img,
-        os.path.join(
-            constants.SAVE_PATH, "result_img " + str(datetime.datetime.now()) + ".jpg"
-        ),
-    )
 
 
 class PointOperatorMenu:
@@ -42,7 +31,9 @@ class PointOperatorMenu:
             command=BinaryImageOperation(
                 image_io,
                 "Add",
-                lambda x, y: linear_adj_image_wrapper(ImageImpl.add_matrix(x, y)),
+                lambda x, y: display_linear_adj_image_wrapper(
+                    ImageImpl.add_matrix(x, y)
+                ),
             ).generate_interface,
         )
 
@@ -51,7 +42,9 @@ class PointOperatorMenu:
             command=BinaryImageOperation(
                 image_io,
                 "Sub",
-                lambda x, y: linear_adj_image_wrapper(ImageImpl.sub_matrix(x, y)),
+                lambda x, y: display_linear_adj_image_wrapper(
+                    ImageImpl.sub_matrix(x, y)
+                ),
             ).generate_interface,
         )
 
@@ -60,7 +53,9 @@ class PointOperatorMenu:
             command=BinaryImageOperation(
                 image_io,
                 "Mul",
-                lambda x, y: linear_adj_image_wrapper(ImageImpl.mul_matrix(x, y)),
+                lambda x, y: display_linear_adj_image_wrapper(
+                    ImageImpl.mul_matrix(x, y)
+                ),
             ).generate_interface,
         )
 
@@ -72,7 +67,7 @@ class PointOperatorMenu:
             command=UnaryImageOperation(
                 image_io,
                 "CRD",
-                lambda x: linear_adj_image_wrapper(
+                lambda x: display_linear_adj_image_wrapper(
                     operators.dynamic_compression_image(x)
                 ),
             ).generate_interface,
@@ -83,7 +78,7 @@ class PointOperatorMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Mul",
-                lambda image, scalar: linear_adj_image_wrapper(
+                lambda image, scalar: display_linear_adj_image_wrapper(
                     ImageImpl.mul_scalar_matrix(image, scalar)
                 ),
                 params=["scalar"],
@@ -94,7 +89,7 @@ class PointOperatorMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Gamma",
-                lambda image, c: linear_adj_image_wrapper(
+                lambda image, c: display_linear_adj_image_wrapper(
                     operators.gamma_fun(image, c)
                 ),
                 params=["c"],
@@ -105,7 +100,9 @@ class PointOperatorMenu:
             command=UnaryImageOperation(
                 image_io,
                 "Neg",
-                lambda x: linear_adj_image_wrapper(operators.negative_img_fun(x)),
+                lambda x: display_linear_adj_image_wrapper(
+                    operators.negative_img_fun(x)
+                ),
             ).generate_interface,
         )
         single_img_menu.add_command(
@@ -113,6 +110,8 @@ class PointOperatorMenu:
             command=UnaryImageOperation(
                 image_io,
                 "Equ",
-                lambda x: linear_adj_image_wrapper(operators.histogram_equalization(x)),
+                lambda x: display_linear_adj_image_wrapper(
+                    operators.histogram_equalization(x)
+                ),
             ).generate_interface,
         )

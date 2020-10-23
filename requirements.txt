@@ -4,3 +4,4 @@ imageio==2.9.0
 scipy==1.5.2
 rawpy==0.15.0
 Pillow==7.2.0
+MedPy==0.4.0

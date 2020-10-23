@@ -1,7 +1,7 @@
-import os
 from tkinter import Menu
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from pyimg.config import constants
 from pyimg.menus.operation_interface import UnaryImageOperation
@@ -16,33 +16,37 @@ def plot_hist(image: ImageImpl):
 
         for i in range(image.channels):
             plt.figure(2 + i)
+            channel = image.array[:, :, i]
             plt.hist(
-                image.array[:, :, i].ravel(),
+                channel.ravel(),
                 bins=constants.MAX_PIXEL_VALUE + 1,
+                weights=np.zeros_like(channel).ravel() + 1.0 / channel.size,
                 color=color[i],
             )
             plt.xlabel("Intensity Value")
-            plt.ylabel("Count")
             plt.legend([legends[i]])
             plt.title("Histogram for " + legends[i])
 
             plt.figure(1)
             plt.hist(
-                image.array[:, :, i].ravel(),
+                channel.ravel(),
                 bins=constants.MAX_PIXEL_VALUE + 1,
+                weights=np.zeros_like(channel).ravel() + 1.0 / channel.size,
                 color=color[i],
                 alpha=0.35,
             )
 
         plt.xlabel("Intensity Value")
-        plt.ylabel("Count")
         plt.legend(legends)
         plt.show()
     else:
         plt.figure()
-        plt.hist(image.array.ravel(), bins=constants.MAX_PIXEL_VALUE + 1)
+        plt.hist(
+            image.array.ravel(),
+            bins=constants.MAX_PIXEL_VALUE + 1,
+            weights=np.zeros_like(image.array).ravel() + 1.0 / image.array.size,
+        )
         plt.xlabel("Intensity Value")
-        plt.ylabel("Count")
         plt.legend("Gray scale")
         plt.show()
 

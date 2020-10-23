@@ -1,21 +1,10 @@
-import os
 from tkinter import Menu
 
-from pyimg.config import constants
-from pyimg.menus.operation_interface import (
-    BinaryImageOperation,
-    UnaryImageOperation,
-    UnaryWithParamsImageOperation,
-)
-from pyimg.models.image import ImageImpl, filters, operators
-from pyimg.modules.image_io import display_img, save_img
-
-
-def linear_adj_image_wrapper(image: ImageImpl):
-    adjusted_img = operators.linear_adjustment(image)
-    img = adjusted_img.convert_to_pil()
-    display_img(img)
-    save_img(img, os.path.join(constants.SAVE_PATH, "result_img.jpg"))
+from pyimg.menus.operation_interface import (BinaryImageOperation,
+                                             UnaryImageOperation,
+                                             UnaryWithParamsImageOperation)
+from pyimg.menus.point_operators import display_linear_adj_image_wrapper
+from pyimg.models.image import filters
 
 
 class FilterMenu:
@@ -33,7 +22,7 @@ class FilterMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Mean",
-                lambda image, kernel_size: linear_adj_image_wrapper(
+                lambda image, kernel_size: display_linear_adj_image_wrapper(
                     filters.mean_filter_fast(image, kernel_size)
                 ),
                 params=["kernel_size"],
@@ -44,7 +33,7 @@ class FilterMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Median",
-                lambda image, kernel_size: linear_adj_image_wrapper(
+                lambda image, kernel_size: display_linear_adj_image_wrapper(
                     filters.median_filter_fast(image, kernel_size)
                 ),
                 params=["kernel_size"],
@@ -55,7 +44,7 @@ class FilterMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Median",
-                lambda image, kernel_size: linear_adj_image_wrapper(
+                lambda image, kernel_size: display_linear_adj_image_wrapper(
                     filters.weighted_median_filter(image, kernel_size)
                 ),
                 params=["kernel_size"],
@@ -66,7 +55,7 @@ class FilterMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Gaussian",
-                lambda image, sigma, kernel_size: linear_adj_image_wrapper(
+                lambda image, sigma, kernel_size: display_linear_adj_image_wrapper(
                     filters.gaussian_filter_fast(image, kernel_size, sigma)
                 ),
                 params=["sigma", "kernel_size"],
@@ -77,7 +66,7 @@ class FilterMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "High",
-                lambda image, kernel_size: linear_adj_image_wrapper(
+                lambda image, kernel_size: display_linear_adj_image_wrapper(
                     filters.high_filter_fast(image, kernel_size)
                 ),
                 params=["kernel_size"],
@@ -88,9 +77,42 @@ class FilterMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Threshold",
-                lambda image, threshold: linear_adj_image_wrapper(
+                lambda image, threshold: display_linear_adj_image_wrapper(
                     filters.threshold_filter(image, threshold)
                 ),
                 params=["threshold"],
+            ).generate_interface,
+        )
+        filter_menu.add_command(
+            label="Isotropic diffusion Filter",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Isotropic",
+                lambda image, max_scale: display_linear_adj_image_wrapper(
+                    filters.isotropic_diffusion(image, max_scale)
+                ),
+                params=["max_scale"],
+            ).generate_interface,
+        )
+        filter_menu.add_command(
+            label="Anisotropic diffusion Filter",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Anisotropic",
+                lambda image, max_scale, sigma: display_linear_adj_image_wrapper(
+                    filters.anisodiff(image, max_scale, sigma)
+                ),
+                params=["max_scale", "sigma"],
+            ).generate_interface,
+        )
+        filter_menu.add_command(
+            label="Bilateral Filter",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Bilateral",
+                lambda image, sigma_s, sigma_r, kernel_size: display_linear_adj_image_wrapper(
+                    filters.bilateral_filter(image, kernel_size, sigma_s, sigma_r)
+                ),
+                params=["sigma_s", "sigma_r", "kernel_size"],
             ).generate_interface,
         )

@@ -7,8 +7,6 @@ import numpy as np
 import rawpy  # nt sure if we can use this library... but i don't see the point of not using it
 from PIL import Image
 
-from pyimg.models.image import ImageImpl
-
 
 def load_raw_image(path: Path) -> np.ndarray:
     """

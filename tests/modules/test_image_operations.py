@@ -10,7 +10,7 @@ sys.path.insert(0, test_module_path + "/../")
 import numpy as np
 
 from pyimg.config.constants import MAX_PIXEL_VALUE
-from pyimg.modules.image_operators import linear_adjustment
+from pyimg.models.image.operators import linear_adjustment
 
 IMG_SHAPE = (256, 256, 3)
 

@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from tkinter import Menu, filedialog, messagebox
 
@@ -30,10 +29,11 @@ class ImageIO:
         image_matrix = (
             np.expand_dims(image_matrix, axis=dims) if dims == 2 else image_matrix
         )
+        img = ImageImpl(image_matrix)
 
-        self.interface.images.append(ImageImpl(image_matrix))
+        self.interface.images.append(img)
 
-        return ImageImpl(image_matrix)
+        return img
 
     def full_save_image(self):
         if self.interface.result_image is None:
@@ -53,6 +53,8 @@ class ImageIO:
             image = Image.fromarray(raw_image)
         else:
             image = Image.open(file_name)
+            if image.mode == "RGBA":
+                image = image.convert("RGB")
         # resize the image and apply a high-quality down sampling filter
         image = image.resize((constants.WIDTH, constants.HEIGHT), Image.ANTIALIAS)
         return image
