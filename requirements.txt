@@ -3,5 +3,5 @@ matplotlib==3.3.2
 imageio==2.9.0
 scipy==1.5.2
 rawpy==0.15.0
-Pillow==7.2.0
+Pillow==8.0.1
 MedPy==0.4.0
