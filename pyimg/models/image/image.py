@@ -58,6 +58,11 @@ class ImageImpl(Matrix):
             )
         return ImageImpl.from_array(image_equalized)
 
+    def to_gray(self):
+        if self.channels == 3:
+            return ImageImpl.from_array(np.dot(self.array[..., :3], [0.2989, 0.5870, 0.1140]))
+        return self
+
     @staticmethod
     def from_array(array):
         return ImageImpl(array)

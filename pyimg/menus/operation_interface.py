@@ -138,6 +138,16 @@ class UnaryWithParamsImageOperation(UnaryImageOperation):
             )
 
 
+class UnaryWithBoolParamsOperation(UnaryWithParamsImageOperation):
+    def __init__(self, image_io: ImageIO, button_text: str, func, params, bool_params):
+        super(UnaryWithBoolParamsOperation, self).__init__(image_io, button_text, func, params)
+        self.bool_params = bool_params
+        self.params = self.params + self.bool_params
+
+        for param in self.bool_params:
+            self.add_radio_button_input(param)
+
+
 class BinaryImageOperation(ImageOperation):
     def __init__(self, image_io: ImageIO, button_text: str, func):
         super(BinaryImageOperation, self).__init__(image_io, 2, button_text)
