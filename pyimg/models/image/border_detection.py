@@ -131,9 +131,9 @@ def canny_detection(
     low_threshold = np.amax(suppressed_image.array) * 0.06
     high_threshold = np.amax(suppressed_image.array) * 0.14
 
-    #umbralized_image = umbralization_with_two_thresholds(suppressed_image, high_threshold, low_threshold)
+    umbralized_image = umbralization_with_two_thresholds(suppressed_image, high_threshold, low_threshold)
 
-    border_image = hysteresis(suppressed_image) #, bool(four_neighbours))
+    border_image = hysteresis(umbralized_image, bool(four_neighbours))
 
     return border_image
 
@@ -205,7 +205,7 @@ def has_border_neighbours_without_thresholds(image: ImageImpl, x: int, y: int, f
             return True
     return False
 
-"""
+
 def hysteresis(image: ImageImpl, four_neighbours: bool = True) -> ImageImpl:
     height, width = image.height, image.width
     image_array = image.get_array()[..., 0]
@@ -250,3 +250,4 @@ def hysteresis(image: ImageImpl):
             # if imgR[i-1,j] == 255 or imgR[i,j+1]==255 or imgR[i,j-1]==255 or imgR[i+1,j]==255:
             #	imgR[i,j] = 255
     return ImageImpl(imgR[:, :, np.newaxis])
+"""
