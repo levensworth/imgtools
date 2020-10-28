@@ -131,10 +131,14 @@ def canny_detection(
     low_threshold = np.amax(suppressed_image.array) * 0.06
     high_threshold = np.amax(suppressed_image.array) * 0.14
 
+    import cv2
+    edges = cv2.Canny(filtered_image.get_array()[..., 0], 100, 200)
+
     umbralized_image = umbralization_with_two_thresholds(suppressed_image, high_threshold, low_threshold)
 
     border_image = hysteresis(umbralized_image, bool(four_neighbours))
 
+    border_image = ImageImpl.from_array(edges[:, :, np.newaxis])
     return border_image
 
 
@@ -220,34 +224,3 @@ def hysteresis(image: ImageImpl, four_neighbours: bool = True) -> ImageImpl:
                 border_image[y, x] = constants.MAX_PIXEL_VALUE
 
     return ImageImpl(border_image[:, :, np.newaxis])
-"""
-
-
-def hysteresis(image: ImageImpl):
-    img = image.get_array()[..., 0]
-
-    imgR = np.zeros((img.shape[0], img.shape[1]))
-
-    t1 = np.amax(img) * 0.06
-    t2 = np.amax(img) * 0.14
-    for i in range(1, img.shape[0] - 1):
-        for j in range(1, img.shape[1] - 1):
-            if img[i, j] > t2:
-                imgR[i, j] = 255
-            elif img[i, j] < t1:
-                imgR[i, j] = 0
-            else:
-                # En los 8
-                flag = False
-                for k in range(i - 1, i + 1):
-                    for l in range(j - 1, j + 1):
-                        if imgR[k, l] == 255 and (k != 0 or l != 0):
-                            flag = True
-                if flag:
-                    # Algun vecino es borde
-                    imgR[i, j] = 255
-                # En los 4
-            # if imgR[i-1,j] == 255 or imgR[i,j+1]==255 or imgR[i,j-1]==255 or imgR[i+1,j]==255:
-            #	imgR[i,j] = 255
-    return ImageImpl(imgR[:, :, np.newaxis])
-"""
