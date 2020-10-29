@@ -33,6 +33,33 @@ class Matrix:
     def min_value(self) -> float:
         return np.amin(self.array)
 
+
+    def apply_filter(self, kernel, fn) -> None:
+        # lets pad the image for the aforention kernel
+        kernel_size = kernel.shape[0]
+        padding = self._calculate_padding(kernel_size)
+        padded_matrix = self._apply_padding(padding)
+
+        for channel in range(padded_matrix.shape[-1]):
+            for index, _ in np.ndenumerate(self.array[:, :, channel]):
+                # case 3d image
+                i, j = index
+
+                window = self._get_window(
+                    padded_matrix[:, :, channel],
+                    i + kernel_size,
+                    j + kernel_size,
+                    kernel_size,
+                )
+
+                window = window * kernel
+                val = fn(window)
+                if val < 0:
+                    print('here')
+                self.array[i, j, channel] = val
+
+
+
     def convolution(self, kernel_size: int, fn) -> None:
         """
         A discrete convolution implementation. Apply a function given a square window

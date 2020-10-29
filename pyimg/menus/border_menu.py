@@ -138,3 +138,17 @@ class BorderMenu:
                 bool_params=[("four_neighbours", "eight_neighbours")]
             ).generate_interface,
         )
+
+        border_menu.add_command(
+            label="Susan Border Detector",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "susan",
+                lambda image, threshold: display_linear_adj_image_wrapper(
+                    border_detection.susan_detection(
+                        image, threshold,
+                    )
+                ),
+                params=["threshold"],
+            ).generate_interface,
+        )
