@@ -1,8 +1,11 @@
+import re
 import time
 
 import numpy as np
 
+from pyimg.menus.io_menu import ImageIO
 from pyimg.models.image import ImageImpl
+from pyimg.modules.image_io import display_img
 
 
 def pixel_exchange(image: ImageImpl, top_left_vertex_x: int, top_left_vertex_y: int, bottom_right_vertex_x: int,
@@ -16,6 +19,41 @@ def pixel_exchange(image: ImageImpl, top_left_vertex_x: int, top_left_vertex_y: 
 
     result = generate_image_with_border(mask_image, image)
     return result
+
+
+def pixel_exchange_in_sequence(image: ImageImpl, image_name: str, top_left_vertex_x: int, top_left_vertex_y: int,
+                               bottom_right_vertex_x: int, bottom_right_vertex_y: int, epsilon: float, max_iterations:
+                               int, quantity: int) -> ImageImpl:
+    last_slash_pos = image_name.rfind("/")
+    absolute_path = image_name[0:last_slash_pos + 1]
+    image_name = image_name[last_slash_pos + 1:]
+    current_number = int(re.findall(r'\d+', image_name)[0])
+    start = image_name.find("" + str(current_number))
+    prefix = image_name[0:start]
+    suffix_start = image_name.find(".")
+    extension = image_name[suffix_start:]
+
+    for current_image_index in range(current_number, current_number + quantity):
+        if current_image_index != current_number:
+            image_name = absolute_path + prefix + str(current_image_index) + extension
+            image = load_image(image_name)
+
+        new_image = pixel_exchange(image, top_left_vertex_x, top_left_vertex_y, bottom_right_vertex_x,
+                                   bottom_right_vertex_y, epsilon, max_iterations)
+        generated_image_name = "../../videos/generated/pixel_exchange_" + prefix + str(current_image_index) + extension
+        display_img(new_image.convert_to_pil())
+
+    return new_image
+
+
+def load_image(filename: str) -> ImageImpl:
+    image = ImageIO.load_image(filename)
+    image_matrix = np.array(image)
+    dims = len(image_matrix.shape)
+    image_matrix = (
+        np.expand_dims(image_matrix, axis=dims) if dims == 2 else image_matrix
+    )
+    return ImageImpl(image_matrix)
 
 
 def get_object_color(mask_array: np.ndarray, image: ImageImpl, top_left_vertex_x: int, top_left_vertex_y: int,
@@ -66,6 +104,7 @@ def get_object_color(mask_array: np.ndarray, image: ImageImpl, top_left_vertex_x
 
 def iterate_pixel_exchange(mask_array: np.ndarray, image: ImageImpl, lin: dict, lout: dict, max_iterations: int,
                            object_color: np.ndarray, epsilon: float):
+    start_time = time.time()
     for i in range(0, max_iterations):
         new_lin = {}
         new_lout = {}
@@ -77,6 +116,7 @@ def iterate_pixel_exchange(mask_array: np.ndarray, image: ImageImpl, lin: dict, 
         remove_extra_lout(mask_array, image, new_lout, second_lin, second_lout)
         lin = second_lin
         lout = second_lout
+    print(time.time() - start_time)
     return mask_array, lin, lout
 
 

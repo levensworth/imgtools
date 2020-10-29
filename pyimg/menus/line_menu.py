@@ -15,8 +15,11 @@ class LineMenu:
         line_menu = Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Line Detection", menu=line_menu)
 
-        line_menu.add_command(
-            label="Pixel exchange",
+        pixel_exchange_menu = Menu(line_menu, tearoff=0)
+        line_menu.add_cascade(label="Pixel exchange", menu=pixel_exchange_menu)
+
+        pixel_exchange_menu.add_command(
+            label="Image",
             command=UnaryWithParamsAndRegionOperation(
                 image_io,
                 "Apply",
@@ -26,5 +29,20 @@ class LineMenu:
 
                 ),
                 params=["epsilon", "max_iterations"],
+            ).generate_interface,
+        )
+
+        pixel_exchange_menu.add_command(
+            label="Sequence",
+            command=UnaryWithParamsAndRegionOperation(
+                image_io,
+                "Apply",
+                lambda image, region, epsilon, max_iterations, quantity: display_linear_adj_image_wrapper(
+                    line_detection.pixel_exchange_in_sequence(image, image_io.file_name, region.start_x, region.start_y,
+                                                              region.end_x, region.end_y, epsilon, int(max_iterations),
+                                                              int(quantity))
+
+                ),
+                params=["epsilon", "max_iterations", "quantity"],
             ).generate_interface,
         )
