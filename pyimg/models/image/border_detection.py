@@ -103,7 +103,7 @@ def gaussian_laplacian_detection(
 
 
 def canny_detection(
-    a_img: ImageImpl, kernel_size: int, sigma_s: float, sigma_r: float, four_neighbours: bool,
+    a_img: ImageImpl, kernel_size: int, sigma_s: float, sigma_r: float, four_neighbours: bool = True,
 ) -> ImageImpl:
     """
     apply caddy mask and border detection

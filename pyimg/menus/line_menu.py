@@ -1,6 +1,7 @@
 from tkinter import Menu
 
-from pyimg.menus.operation_interface import (UnaryWithParamsAndRegionOperation)
+from pyimg.menus.operation_interface import (UnaryWithParamsAndRegionOperation,
+                                             UnaryWithParamsImageOperation)
 from pyimg.menus.point_operators import display_linear_adj_image_wrapper
 from pyimg.models.image import line_detection
 
@@ -44,5 +45,21 @@ class LineMenu:
 
                 ),
                 params=["epsilon", "max_iterations", "quantity"],
+            ).generate_interface,
+        )
+
+        hough_detection_menu = Menu(line_menu, tearoff=0)
+        line_menu.add_cascade(label="Hough", menu=hough_detection_menu)
+
+        hough_detection_menu.add_command(
+            label="Line",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Apply",
+                lambda image, epsilon, threshold: display_linear_adj_image_wrapper(
+                    line_detection.hough_line_detector(image, epsilon, int(threshold))
+
+                ),
+                params=["epsilon", "threshold"],
             ).generate_interface,
         )

@@ -1,10 +1,12 @@
+import math
 import re
 import time
 
 import numpy as np
 
+from pyimg.config import constants
 from pyimg.menus.io_menu import ImageIO
-from pyimg.models.image import ImageImpl
+from pyimg.models.image import ImageImpl, border_detection
 from pyimg.modules.image_io import display_img
 
 
@@ -40,10 +42,107 @@ def pixel_exchange_in_sequence(image: ImageImpl, image_name: str, top_left_verte
 
         new_image = pixel_exchange(image, top_left_vertex_x, top_left_vertex_y, bottom_right_vertex_x,
                                    bottom_right_vertex_y, epsilon, max_iterations)
-        generated_image_name = "../../videos/generated/pixel_exchange_" + prefix + str(current_image_index) + extension
+
         display_img(new_image.convert_to_pil())
 
     return new_image
+
+
+def hough_line(edges: ImageImpl):
+    # Theta 0 - 180 degree
+    # Calculate 'cos' and 'sin' value ahead to improve running time
+    thetas = np.arange(0, 180, 1)
+    cos = np.cos(np.deg2rad(thetas))
+    sin = np.sin(np.deg2rad(thetas))
+
+    # Generate a accumulator matrix to store the values
+    rho_range = round(math.sqrt(edges.height**2 + edges.width**2))
+    accumulator = np.zeros((2 * rho_range, len(thetas)), dtype=np.uint8)
+
+    # Threshold to get edges pixel location (x,y)
+    edge_pixels = np.where(edges.get_array()[..., 0] == 255)
+    coordinates = list(zip(edge_pixels[0], edge_pixels[1]))
+
+    # Calculate rho value for each edge location (x,y) with all the theta range
+    for p in range(len(coordinates)):
+        for theta in range(len(thetas)):
+            rho = int(round(coordinates[p][1] * cos[theta] + coordinates[p][0] * sin[theta]))
+            accumulator[rho, theta] += 2 # Suppose add 1 only, Just want to get clear result
+
+    return accumulator, rho_range, thetas
+
+
+def hough_line_detector(image: ImageImpl, epsilon: float, threshold: int):
+
+    border_image = border_detection.canny_detection(image, 3, 10, 10)
+
+    """
+    delta_rho = 1
+    min_rho = - np.sqrt(2) * max(image.height, image.width)
+    accumulator, rho_range, thetas = hough_line(border_image)
+    """
+    max_size = max(image.height, image.width)
+    max_rho = np.sqrt(2) * max_size
+    min_rho = - np.sqrt(2) * max_size
+    delta_rho = 1
+    rows = int((max_rho - min_rho) / delta_rho) + 1
+    delta_theta = (15 / 180) * np.pi
+    cols = int(((np.pi / 2) - (- np.pi / 2)) / delta_theta)
+    cols = 6
+    thetas = [0, np.pi / 8, np.pi / 6, np.pi / 4, np.pi / 3, np.pi / 2]
+    accumulator = np.zeros((rows, cols))
+
+    edge_pixels = np.where(border_image.get_array()[..., 0] == constants.MAX_PIXEL_VALUE)
+    coordinates = list(zip(edge_pixels[0], edge_pixels[1]))
+
+    for p in range(len(coordinates)):
+        for rho in range(0, rows):
+            for theta in range(0, cols):
+                current_rho = min_rho + rho * delta_rho
+                # current_theta = (-np.pi / 2) + (theta * delta_theta)
+                current_theta = thetas[theta]
+                value = abs(current_rho - coordinates[p][1] * np.cos(current_theta)
+                            - coordinates[p][0] * np.sin(current_theta))
+                if value <= epsilon:
+                    accumulator[rho, theta] += 1
+
+    result = image.to_rgb()
+    for rho in range(0, rows):
+        for theta in range(0, cols):
+            if accumulator[rho, theta] >= threshold:
+                current_rho = min_rho + rho * delta_rho
+                # current_theta = (-np.pi / 2) + (theta * delta_theta)
+                current_theta = thetas[theta]
+                result = draw_lines(result, current_rho, current_theta)
+    return result
+
+
+def draw_lines(image: ImageImpl, rho: float, theta: float):
+    a = np.cos(theta)
+    b = np.sin(theta)
+    x0 = a * rho
+    y0 = b * rho
+    x1 = int(x0 + 1000 * (-b))
+    y1 = int(y0 + 1000 * (a))
+    x2 = int(x0 - 1000 * (-b))
+    y2 = int(y0 - 1000 * (a))
+    if x1 == x2:
+        for y in range(0, image.width):
+            image.array[y, int(x0), 0] = constants.MAX_PIXEL_VALUE
+            image.array[y, int(x0), 1] = 0
+            image.array[y, int(x0), 2] = 0
+
+    else:
+        slope = (y2 - y1) / (x2 - x1)
+        origin_ordenate = y0 - slope * x0
+        for x in range(0, image.width):
+            y = int(slope * x + origin_ordenate)
+            # y = int(- ((np.cos(theta) / np.sin(theta)) * x) + rho / np.sin(theta))
+            if 0 <= y < image.height:
+                image.array[y, x, 0] = constants.MAX_PIXEL_VALUE
+                image.array[y, x, 1] = 0
+                image.array[y, x, 2] = 0
+    return image
 
 
 def load_image(filename: str) -> ImageImpl:
