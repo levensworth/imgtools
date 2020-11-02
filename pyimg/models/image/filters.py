@@ -9,6 +9,8 @@ from scipy import ndimage
 from pyimg.config.constants import MAX_PIXEL_VALUE
 from pyimg.models.image import ImageImpl
 
+import cv2
+
 
 def mean_filter(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
     """
@@ -222,6 +224,10 @@ def high_filter_fast(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
         kernel,
     )
     return a_img
+
+
+def circular_kernel(kernel_size: int):
+    return cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(kernel_size,kernel_size))
 
 
 def threshold_filter(a_img: ImageImpl, threshold: float) -> ImageImpl:

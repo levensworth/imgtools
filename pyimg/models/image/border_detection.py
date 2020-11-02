@@ -8,7 +8,7 @@ from pyimg.config.constants import MAX_PIXEL_VALUE, MIN_PIXEL_VALUE
 from pyimg.models.image import ImageImpl, operators, linear_adjustment
 from pyimg.models.image.thresholding import umbralization_with_two_thresholds
 
-from .filters import gaussian_filter_fast, bilateral_filter
+from .filters import gaussian_filter_fast, bilateral_filter, circular_kernel
 
 
 def prewitt_detector(a_img: ImageImpl) -> ImageImpl:
@@ -224,3 +224,36 @@ def hysteresis(image: ImageImpl, four_neighbours: bool = True) -> ImageImpl:
                 border_image[y, x] = constants.MAX_PIXEL_VALUE
 
     return ImageImpl(border_image[:, :, np.newaxis])
+
+
+def susan_detection(
+    a_img: ImageImpl, threshold: int
+) -> ImageImpl:
+    """
+
+    :param a_img:
+    :param kernel_size:
+    :param threshold:
+    :return:
+    """
+    circ_kernel = circular_kernel(7)
+    a_img.apply_filter(circ_kernel, lambda m: _calculate_c_for_susan(m, threshold))
+    a_img.array = np.uint8(a_img.array > 0.75)
+    return a_img.mul_scalar(255)
+
+
+def _calculate_c_for_susan(matrix, threshold):
+    c = 0
+
+    center_val = int(matrix.shape[0] / 2)
+    center_val = matrix[center_val, center_val]
+
+    matrix = np.abs(matrix - center_val)
+    matrix = matrix < threshold
+
+    try:
+        v = sum(np.sum(matrix)) - 12 if center_val < threshold else sum(np.sum(matrix))
+        return 1 - v / 37
+    except TypeError:
+        v = np.sum(matrix) - 12 if center_val < threshold else np.sum(matrix)
+        return 1 - v / 37
