@@ -48,76 +48,38 @@ def pixel_exchange_in_sequence(image: ImageImpl, image_name: str, top_left_verte
     return new_image
 
 
-def hough_line(edges: ImageImpl):
-    # Theta 0 - 180 degree
-    # Calculate 'cos' and 'sin' value ahead to improve running time
-    thetas = np.arange(0, 180, 1)
-    cos = np.cos(np.deg2rad(thetas))
-    sin = np.sin(np.deg2rad(thetas))
-
-    # Generate a accumulator matrix to store the values
-    rho_range = round(math.sqrt(edges.height**2 + edges.width**2))
-    accumulator = np.zeros((2 * rho_range, len(thetas)), dtype=np.uint8)
-
-    # Threshold to get edges pixel location (x,y)
-    edge_pixels = np.where(edges.get_array()[..., 0] == 255)
-    coordinates = list(zip(edge_pixels[0], edge_pixels[1]))
-
-    # Calculate rho value for each edge location (x,y) with all the theta range
-    for p in range(len(coordinates)):
-        for theta in range(len(thetas)):
-            rho = int(round(coordinates[p][1] * cos[theta] + coordinates[p][0] * sin[theta]))
-            accumulator[rho, theta] += 2 # Suppose add 1 only, Just want to get clear result
-
-    return accumulator, rho_range, thetas
-
-
-def hough_line_detector(image: ImageImpl, epsilon: float, threshold: int):
-
+def hough_line_detector(image: ImageImpl, epsilon: float, threshold: int, theta_step: int = 7, rho_step: int = 5
+                        ) -> ImageImpl:
     border_image = border_detection.canny_detection(image, 3, 10, 10)
 
-    """
-    delta_rho = 1
-    min_rho = - np.sqrt(2) * max(image.height, image.width)
-    accumulator, rho_range, thetas = hough_line(border_image)
-    """
-    max_size = max(image.height, image.width)
-    max_rho = np.sqrt(2) * max_size
-    min_rho = - np.sqrt(2) * max_size
-    delta_rho = 1
-    rows = int((max_rho - min_rho) / delta_rho) + 1
-    delta_theta = (15 / 180) * np.pi
-    cols = int(((np.pi / 2) - (- np.pi / 2)) / delta_theta)
-    cols = 6
-    thetas = [0, np.pi / 8, np.pi / 6, np.pi / 4, np.pi / 3, np.pi / 2]
-    accumulator = np.zeros((rows, cols))
+    D = max(image.height, image.width)
+    max_rho = np.sqrt(2) * D
+
+    rho_range = np.arange(-max_rho, max_rho, rho_step)
+    theta_range = np.deg2rad(np.arange(-90, 90, theta_step))
+    theta_cos = np.cos(theta_range)
+    theta_sin = np.sin(theta_range)
 
     edge_pixels = np.where(border_image.get_array()[..., 0] == constants.MAX_PIXEL_VALUE)
     coordinates = list(zip(edge_pixels[0], edge_pixels[1]))
+    accumulator = np.zeros((len(theta_range), len(rho_range)))
 
     for p in range(len(coordinates)):
-        for rho in range(0, rows):
-            for theta in range(0, cols):
-                current_rho = min_rho + rho * delta_rho
-                # current_theta = (-np.pi / 2) + (theta * delta_theta)
-                current_theta = thetas[theta]
-                value = abs(current_rho - coordinates[p][1] * np.cos(current_theta)
-                            - coordinates[p][0] * np.sin(current_theta))
-                if value <= epsilon:
-                    accumulator[rho, theta] += 1
+        for theta_idx in range(len(theta_range)):
+            for rho_idx in range(len(rho_range)):
+                # Veo si cumple la ecuacion de la recta
+                if abs(rho_range[rho_idx] - coordinates[p][1] * theta_cos[theta_idx] - coordinates[p][0] * theta_sin[theta_idx]) < epsilon:
+                    accumulator[theta_idx, rho_idx] += 1
 
     result = image.to_rgb()
-    for rho in range(0, rows):
-        for theta in range(0, cols):
-            if accumulator[rho, theta] >= threshold:
-                current_rho = min_rho + rho * delta_rho
-                # current_theta = (-np.pi / 2) + (theta * delta_theta)
-                current_theta = thetas[theta]
-                result = draw_lines(result, current_rho, current_theta)
+    for rho_idx in range(len(rho_range)):
+        for theta_idx in range(len(theta_range)):
+            if accumulator[theta_idx, rho_idx] >= threshold:
+                result = draw_lines(result, rho_range[rho_idx], theta_range[theta_idx])
     return result
 
 
-def draw_lines(image: ImageImpl, rho: float, theta: float):
+def draw_lines(image: ImageImpl, rho: float, theta: float) -> ImageImpl:
     a = np.cos(theta)
     b = np.sin(theta)
     x0 = a * rho
@@ -142,6 +104,61 @@ def draw_lines(image: ImageImpl, rho: float, theta: float):
                 image.array[y, x, 0] = constants.MAX_PIXEL_VALUE
                 image.array[y, x, 1] = 0
                 image.array[y, x, 2] = 0
+    return image
+
+
+def hough_circle_detector(image: ImageImpl, epsilon: float, threshold: int, max_radius: int = 40, a_step: int = 4,
+                          b_step: int = 4, r_step: int = 3) -> ImageImpl:
+    border_image = border_detection.canny_detection(image, 3, 10, 10)
+
+    a_range = np.arange(a_step, image.width - a_step, a_step)
+    b_range = np.arange(b_step, image.height - b_step, b_step)
+    r_range = np.arange(r_step, max_radius, r_step)
+
+    edge_pixels = np.where(border_image.get_array()[..., 0] == constants.MAX_PIXEL_VALUE)
+    coordinates = list(zip(edge_pixels[0], edge_pixels[1]))
+    accumulator = np.zeros((len(a_range), len(b_range), len(r_range)))
+
+    for p in range(len(coordinates)):
+        for a_idx in range(len(a_range)):
+            for b_idx in range(len(b_range)):
+                for r_idx in range(len(r_range)):
+                    if abs(r_range[r_idx] ** 2 - (coordinates[p][1] - a_range[a_idx]) ** 2 - (coordinates[p][0] - b_range[b_idx]) ** 2) < epsilon:
+                        accumulator[a_idx, b_idx, r_idx] += 1
+
+    result = image.to_rgb()
+    for a_idx in range(len(a_range)):
+        for b_idx in range(len(b_range)):
+            for r_idx in range(len(r_range)):
+                if accumulator[a_idx, b_idx, r_idx] >= threshold:
+                    result = draw_circle(result, a_range[a_idx], b_range[b_idx], r_range[r_idx], epsilon)
+    return result
+
+
+def draw_circle(image: ImageImpl, a: float, b: float, radius: float, epsilon: float) -> ImageImpl:
+    x_start = int(a - radius)
+    x_end = int(a + radius)
+    y_start = int(b - radius)
+    y_end = int(b + radius)
+
+    for y in range(y_start, y_end):
+        for x in range(x_start, x_end):
+            if 0 <= x < image.width and 0 <= y < image.height:
+                x_difference = pow(x - a, 2)
+                y_difference = pow(y - b, 2)
+                squared_radius = pow(radius, 2)
+                value = abs(x_difference + y_difference - squared_radius)
+                if value <= epsilon:
+                    image.array[y, x, 0] = 0
+                    image.array[y, x, 1] = constants.MAX_PIXEL_VALUE
+                    image.array[y, x, 2] = 0
+                    for i in range(1, 4):
+                        if 0 <= x - 1 and x + 1 < image.width and 0 <= y - 1 and y + 1 < image.height:
+                            image.array[y + i, x, 1] = constants.MAX_PIXEL_VALUE
+                            image.array[y - i, x, 1] = constants.MAX_PIXEL_VALUE
+                            image.array[y, x + i, 1] = constants.MAX_PIXEL_VALUE
+                            image.array[y, x - i, 1] = constants.MAX_PIXEL_VALUE
+                            image.array[y, x, 1] = constants.MAX_PIXEL_VALUE
     return image
 
 

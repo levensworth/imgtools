@@ -63,3 +63,16 @@ class LineMenu:
                 params=["epsilon", "threshold"],
             ).generate_interface,
         )
+
+        hough_detection_menu.add_command(
+            label="Circle",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Apply",
+                lambda image, epsilon, threshold: display_linear_adj_image_wrapper(
+                    line_detection.hough_circle_detector(image, epsilon, int(threshold))
+
+                ),
+                params=["epsilon", "threshold"],
+            ).generate_interface,
+        )
