@@ -45,10 +45,10 @@ def sobel_detector(a_img: ImageImpl, return_all: bool = False) -> List[ImageImpl
     :return: image gradient filter matrix representation
     """
 
-    # this will calculate the horizontal gradient
     horizontal_kernel = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
     # calcualte vertical gradient
-    vertical_kernel = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
+    vertical_kernel = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+
     horizontal_grad = copy(a_img)
     horizontal_grad.convolution_fast(horizontal_kernel)
 
@@ -122,141 +122,78 @@ def canny_detection(
     gray_image = a_img.to_gray()
 
     filtered_image = bilateral_filter(gray_image, kernel_size, sigma_s, sigma_r)
-    # filtered_image = gaussian_filter_fast(gray_image, kernel_size, sigma_s)
 
     border_images = sobel_detector(filtered_image, True)
 
     synthesized_image = linear_adjustment(border_images[0])
-    horizontal_image = linear_adjustment(border_images[1])
-    vertical_image = linear_adjustment(border_images[2])
+    horizontal_image = border_images[1]
+    vertical_image = border_images[2]
 
-    # angle_matrix = get_angle(horizontal_image, vertical_image)
     # this calcualtes the direction in radians
-    angle_matrix = np.arctan2(vertical_image.array, horizontal_image.array)
+    angle_matrix = np.arctan2(horizontal_image.array[..., 0], vertical_image.array[..., 0])
     # now we convert to degrees
     angle_matrix = np.rad2deg(angle_matrix)
-    angle_matrix += 180
+    angle_matrix[angle_matrix < 0] += 180
 
     suppressed_image = suppress_false_maximums2(synthesized_image, angle_matrix)
 
-    suppressed_image = linear_adjustment(suppressed_image)
-
-    low_threshold = np.amax(suppressed_image.array) * 0.03
     high_threshold = np.amax(suppressed_image.array) * 0.15
-    #
-    # import cv2
-    # edges = cv2.Canny(filtered_image.get_array()[..., 0], 100, 200)
+    low_threshold = np.amax(suppressed_image.array) * 0.05
 
     umbralized_image = umbralization_with_two_thresholds(
         suppressed_image, high_threshold, low_threshold
     )
 
-    umbralized_image = linear_adjustment(umbralized_image)
-
     border_image = hysteresis(umbralized_image, bool(four_neighbours))
 
+    # import cv2
+    # edges = cv2.Canny(filtered_image.get_array()[..., 0], 100, 200)
     # border_image = ImageImpl.from_array(edges[:, :, np.newaxis])
+
     return linear_adjustment(border_image)
 
 
-def get_angle(horizontal_image: ImageImpl, vertical_image: ImageImpl) -> np.ndarray:
-    img1, img2 = horizontal_image.array[..., 0], vertical_image.array[..., 0]
-    u1 = 22.5
-    u2 = 67.5
-    u3 = 112.5
-    u4 = 157.5
-    img3 = np.arctan2(img1, img2) * 180 / np.pi
-    for i in range(0, img1.shape[0]):
-        for j in range(0, img1.shape[1]):
-            if img2[i, j] == 0:
-                img3[i, j] = 90
-            else:
-                val = img3[i, j]
-                if val < 0:
-                    val = val + 180
-                if u1 <= val < u2:
-                    img3[i, j] = 45
-                elif u2 <= val < u3:
-                    img3[i, j] = 90
-                elif u3 <= val < u4:
-                    img3[i, j] = 135
-                else:
-                    img3[i, j] = 0
-    return img3
-
-
-def suppress_false_maximums(
-    synthesized_image: ImageImpl, angle_matrix: np.ndarray
+def suppress_false_maximums2(
+    synthesized_image: ImageImpl, angle: np.ndarray
 ) -> ImageImpl:
     synthesized_array = synthesized_image.array[..., 0]
-    result = np.array(synthesized_array)
+    result = np.zeros_like(synthesized_array)
+
     for i in range(1, result.shape[0] - 1):
         for j in range(1, result.shape[1] - 1):
-            if angle_matrix[i, j] == 0:
-                pix1 = synthesized_array[i, j - 1]
-                pix2 = synthesized_array[i, j + 1]
-            elif angle_matrix[i, j] == 45:
-                pix1 = synthesized_array[i - 1, j + 1]
-                pix2 = synthesized_array[i + 1, j - 1]
-            elif angle_matrix[i, j] == 135:
-                pix1 = synthesized_array[i - 1, j - 1]
-                pix2 = synthesized_array[i + 1, j + 1]
-            elif angle_matrix[i, j] == 90:
-                pix1 = synthesized_array[i - 1, j]
-                pix2 = synthesized_array[i + 1, j]
-            else:
-                ValueError("Invalid angle in matrix")
 
-            if pix1 > synthesized_array[i, j] or pix2 > synthesized_array[i, j]:
+            # angle 0
+            if (0 <= angle[i, j] < 22.5) or (157.5 <= angle[i, j] <= 180):
+                after_pixel = synthesized_array[i, j + 1]
+                before_pixel = synthesized_array[i, j - 1]
+
+            # angle 45
+            elif 22.5 <= angle[i, j] < 67.5:
+                after_pixel = synthesized_array[i + 1, j - 1]
+                before_pixel = synthesized_array[i - 1, j + 1]
+
+            # angle 90
+            elif 67.5 <= angle[i, j] < 112.5:
+                after_pixel = synthesized_array[i + 1, j]
+                before_pixel = synthesized_array[i - 1, j]
+
+            # angle 135
+            elif 112.5 <= angle[i, j] < 157.5:
+                after_pixel = synthesized_array[i - 1, j - 1]
+                before_pixel = synthesized_array[i + 1, j + 1]
+
+            else:
+                ValueError('Angle not valid')
+
+            if synthesized_array[i, j] >= after_pixel and synthesized_array[i, j] >= before_pixel:
+                result[i, j] = synthesized_array[i, j]
+            else:
                 result[i, j] = 0
     return ImageImpl.from_array(result[:, :, np.newaxis])
 
 
-def suppress_false_maximums2(
-    synthesized_image: ImageImpl, angle_matrix: np.ndarray
-) -> ImageImpl:
-    synthesized_array = synthesized_image.array[..., 0]
-    result = np.array(synthesized_array)
-    PI = 180
-
-    for row in range(1, result.shape[0] - 1):
-        for col in range(1, result.shape[1] - 1):
-
-            direction = angle_matrix[row, col]
-
-            if (0 <= direction < PI / 8) or (15 * PI / 8 <= direction <= 2 * PI):
-                before_pixel = synthesized_array[row, col - 1]
-                after_pixel = synthesized_array[row, col + 1]
-
-            elif (PI / 8 <= direction < 3 * PI / 8) or (
-                9 * PI / 8 <= direction < 11 * PI / 8
-            ):
-                before_pixel = synthesized_array[row + 1, col - 1]
-                after_pixel = synthesized_array[row - 1, col + 1]
-
-            elif (3 * PI / 8 <= direction < 5 * PI / 8) or (
-                11 * PI / 8 <= direction < 13 * PI / 8
-            ):
-                before_pixel = synthesized_array[row - 1, col]
-                after_pixel = synthesized_array[row + 1, col]
-
-            else:
-                before_pixel = synthesized_array[row - 1, col - 1]
-                after_pixel = synthesized_array[row + 1, col + 1]
-
-            if (
-                synthesized_array[row, col] >= before_pixel
-                and synthesized_array[row, col] >= after_pixel
-            ):
-                result[row, col] = synthesized_array[row, col]
-
-            # if pix1 > synthesized_array[i, j] or pix2 > synthesized_array[i, j]:
-            #     result[i, j] = 0
-    return ImageImpl.from_array(result[:, :, np.newaxis])
-
-
 def has_border_neighbours_without_thresholds(
-    image: ImageImpl, x: int, y: int, four_neighbours: bool
+    image: ImageImpl, i: int, j: int, four_neighbours: bool
 ):
     height, width = image.height, image.width
     image_array = image.get_array()[..., 0]
@@ -274,33 +211,31 @@ def has_border_neighbours_without_thresholds(
             [-1, 1],
             [-1, 0],
         ]
-    for i in range(0, len(increments)):
-        new_x = x + increments[i][1]
-        new_y = y + increments[i][0]
+    for k in range(0, len(increments)):
+        new_i = i + increments[k][0]
+        new_j = j + increments[k][1]
         if (
-            0 <= new_x < width
-            and 0 <= new_y < height
-            and image_array[new_y, new_x] == constants.MAX_PIXEL_VALUE
+            0 <= new_i < width
+            and 0 <= new_j < height
+            and image_array[new_i, new_j] == constants.MAX_PIXEL_VALUE
         ):
             return True
     return False
 
 
-def hysteresis(image: ImageImpl, four_neighbours: bool = True) -> ImageImpl:
+def hysteresis(image: ImageImpl, four_neighbours: bool = True, weak: int = int(constants.MAX_PIXEL_VALUE/2), strong: int = constants.MAX_PIXEL_VALUE) -> ImageImpl:
     height, width = image.height, image.width
     image_array = image.get_array()[..., 0]
 
-    border_image = np.zeros((height, width))
-    for y in range(0, height):
-        for x in range(0, width):
-            if image_array[y, x] == constants.MAX_PIXEL_VALUE:
-                border_image[y, x] = constants.MAX_PIXEL_VALUE
-            elif image_array[
-                y, x
-            ] == constants.MAX_PIXEL_VALUE / 2 and has_border_neighbours_without_thresholds(
-                image, x, y, four_neighbours
-            ):
-                border_image[y, x] = constants.MAX_PIXEL_VALUE
+    border_image = np.array(image_array)
+
+    for i in range(1, width - 1):
+        for j in range(1, height - 1):
+            if border_image[i, j] == weak:
+                if has_border_neighbours_without_thresholds(image, i, j, four_neighbours):
+                    border_image[i, j] = strong
+                else:
+                    border_image[i, j] = 0
 
     return ImageImpl(border_image[:, :, np.newaxis])
 
