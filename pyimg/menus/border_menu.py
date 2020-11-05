@@ -2,7 +2,8 @@ from tkinter import Menu
 
 from pyimg.menus.operation_interface import (BinaryImageOperation,
                                              UnaryImageOperation,
-                                             UnaryWithParamsImageOperation, UnaryWithBoolParamsOperation)
+                                             UnaryWithBoolParamsOperation,
+                                             UnaryWithParamsImageOperation)
 from pyimg.menus.point_operators import display_linear_adj_image_wrapper
 from pyimg.models.image import (border_detection,
                                 multi_direction_border_detection)
@@ -135,7 +136,7 @@ class BorderMenu:
                     )
                 ),
                 params=["sigma_s", "sigma_r", "kernel_size"],
-                bool_params=[("four_neighbours", "eight_neighbours")]
+                bool_params=[("four_neighbours", "eight_neighbours")],
             ).generate_interface,
         )
 
@@ -146,7 +147,8 @@ class BorderMenu:
                 "susan",
                 lambda image, threshold: display_linear_adj_image_wrapper(
                     border_detection.susan_detection(
-                        image, threshold,
+                        image,
+                        threshold,
                     )
                 ),
                 params=["threshold"],

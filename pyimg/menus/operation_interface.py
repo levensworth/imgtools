@@ -146,7 +146,9 @@ class UnaryWithParamsImageOperation(UnaryImageOperation):
 
 class UnaryWithBoolParamsOperation(UnaryWithParamsImageOperation):
     def __init__(self, image_io: ImageIO, button_text: str, func, params, bool_params):
-        super(UnaryWithBoolParamsOperation, self).__init__(image_io, button_text, func, params)
+        super(UnaryWithBoolParamsOperation, self).__init__(
+            image_io, button_text, func, params
+        )
         self.bool_params = bool_params
         self.params = self.params + self.bool_params
 
@@ -156,7 +158,9 @@ class UnaryWithBoolParamsOperation(UnaryWithParamsImageOperation):
 
 class UnaryWithParamsAndRegionOperation(UnaryWithParamsImageOperation):
     def __init__(self, image_io: ImageIO, button_text: str, func, params):
-        super(UnaryWithParamsAndRegionOperation, self).__init__(image_io, button_text, func, params)
+        super(UnaryWithParamsAndRegionOperation, self).__init__(
+            image_io, button_text, func, params
+        )
         self.with_region = True
         self.params = self.params
 
@@ -170,7 +174,9 @@ class UnaryWithParamsAndRegionOperation(UnaryWithParamsImageOperation):
     def command_apply(self):
         if self.is_ready():
             image = self.image_input.get_input()[0]
-            return self.func(**{**{"image": image, "region": self.region}, **self.get_params()})
+            return self.func(
+                **{**{"image": image, "region": self.region}, **self.get_params()}
+            )
         else:
             messagebox.showerror(
                 title="Error",

@@ -1,4 +1,5 @@
 import tkinter as tk
+
 from PIL import ImageTk
 
 
@@ -14,8 +15,16 @@ class ImageViewer(tk.Frame):
         xscroll.grid(row=1, column=0, sticky=tk.E + tk.W)
         yscroll = tk.Scrollbar(self)
         yscroll.grid(row=0, column=1, sticky=tk.N + tk.S)
-        self.canvas = tk.Canvas(self, width=500, height=500, bd=0, highlightthickness=0, relief='ridge',
-                                xscrollcommand=xscroll.set, yscrollcommand=yscroll.set)
+        self.canvas = tk.Canvas(
+            self,
+            width=500,
+            height=500,
+            bd=0,
+            highlightthickness=0,
+            relief="ridge",
+            xscrollcommand=xscroll.set,
+            yscrollcommand=yscroll.set,
+        )
 
         self.canvas.grid(row=0, column=0, sticky=tk.N + tk.S + tk.E + tk.W)
         xscroll.config(command=self.canvas.xview)
@@ -25,9 +34,9 @@ class ImageViewer(tk.Frame):
         self.selection_rect = None
 
         # Bind mouse event handler
-        self.canvas.bind('<Motion>', self.on_mouse_move)
-        self.canvas.bind('<Button-1>', self.on_mouse_press)
-        self.canvas.bind('<ButtonRelease-1>', self.on_mouse_release)
+        self.canvas.bind("<Motion>", self.on_mouse_move)
+        self.canvas.bind("<Button-1>", self.on_mouse_press)
+        self.canvas.bind("<ButtonRelease-1>", self.on_mouse_release)
 
         self.mouse_handler = None
         self.mouse_selection = None
@@ -35,7 +44,7 @@ class ImageViewer(tk.Frame):
     def set_image(self, pil_img):
         # Create the image in the canvas
         self.photo_image = ImageTk.PhotoImage(pil_img)
-        self.canvas.create_image(0, 0, anchor='nw', image=self.photo_image)
+        self.canvas.create_image(0, 0, anchor="nw", image=self.photo_image)
         self.canvas.config(scrollregion=self.canvas.bbox(tk.ALL))
 
     def get_mouse_pos(self, event):
@@ -48,10 +57,10 @@ class ImageViewer(tk.Frame):
         self.mouse_handler = mouse_handler
 
     def set_mouse_leave_handler(self, mouse_leave_handler):
-        self.canvas.bind('<Leave>', mouse_leave_handler)
+        self.canvas.bind("<Leave>", mouse_leave_handler)
 
     def on_mouse_move(self, event):
-        self.canvas.configure(cursor='crosshair')
+        self.canvas.configure(cursor="crosshair")
 
         if self.mouse_handler != None:
             mouse_pos = self.get_mouse_pos(event)
@@ -64,8 +73,8 @@ class ImageViewer(tk.Frame):
 
             if self.selection_rect == None:
                 self.selection_rect = self.canvas.create_rectangle(
-                    startx, starty, endx, endy,
-                    outline='red')
+                    startx, starty, endx, endy, outline="red"
+                )
             else:
                 self.canvas.coords(self.selection_rect, startx, starty, endx, endy)
         except:

@@ -10,26 +10,51 @@ from pyimg.models.image import ImageImpl, border_detection
 from pyimg.modules.image_io import display_img
 
 
-def pixel_exchange(image: ImageImpl, top_left_vertex_x: int, top_left_vertex_y: int, bottom_right_vertex_x: int,
-                   bottom_right_vertex_y: int, epsilon: float, max_iterations: int) -> ImageImpl:
+def pixel_exchange(
+    image: ImageImpl,
+    top_left_vertex_x: int,
+    top_left_vertex_y: int,
+    bottom_right_vertex_x: int,
+    bottom_right_vertex_y: int,
+    epsilon: float,
+    max_iterations: int,
+) -> ImageImpl:
     mask_array = np.ones((image.height, image.width)) * 3
     lin = {}
     lout = {}
-    object_color = get_object_color(mask_array, image, top_left_vertex_x, top_left_vertex_y, bottom_right_vertex_x,
-                                    bottom_right_vertex_y, lin, lout)
-    mask_image, lin, lout = iterate_pixel_exchange(mask_array, image, lin, lout, max_iterations, object_color, epsilon)
+    object_color = get_object_color(
+        mask_array,
+        image,
+        top_left_vertex_x,
+        top_left_vertex_y,
+        bottom_right_vertex_x,
+        bottom_right_vertex_y,
+        lin,
+        lout,
+    )
+    mask_image, lin, lout = iterate_pixel_exchange(
+        mask_array, image, lin, lout, max_iterations, object_color, epsilon
+    )
 
     result = generate_image_with_border(mask_image, image)
     return result
 
 
-def pixel_exchange_in_sequence(image: ImageImpl, image_name: str, top_left_vertex_x: int, top_left_vertex_y: int,
-                               bottom_right_vertex_x: int, bottom_right_vertex_y: int, epsilon: float, max_iterations:
-                               int, quantity: int) -> ImageImpl:
+def pixel_exchange_in_sequence(
+    image: ImageImpl,
+    image_name: str,
+    top_left_vertex_x: int,
+    top_left_vertex_y: int,
+    bottom_right_vertex_x: int,
+    bottom_right_vertex_y: int,
+    epsilon: float,
+    max_iterations: int,
+    quantity: int,
+) -> ImageImpl:
     last_slash_pos = image_name.rfind("/")
-    absolute_path = image_name[0:last_slash_pos + 1]
-    image_name = image_name[last_slash_pos + 1:]
-    current_number = int(re.findall(r'\d+', image_name)[0])
+    absolute_path = image_name[0 : last_slash_pos + 1]
+    image_name = image_name[last_slash_pos + 1 :]
+    current_number = int(re.findall(r"\d+", image_name)[0])
     start = image_name.find("" + str(current_number))
     prefix = image_name[0:start]
     suffix_start = image_name.find(".")
@@ -40,16 +65,28 @@ def pixel_exchange_in_sequence(image: ImageImpl, image_name: str, top_left_verte
             image_name = absolute_path + prefix + str(current_image_index) + extension
             image = load_image(image_name)
 
-        new_image = pixel_exchange(image, top_left_vertex_x, top_left_vertex_y, bottom_right_vertex_x,
-                                   bottom_right_vertex_y, epsilon, max_iterations)
+        new_image = pixel_exchange(
+            image,
+            top_left_vertex_x,
+            top_left_vertex_y,
+            bottom_right_vertex_x,
+            bottom_right_vertex_y,
+            epsilon,
+            max_iterations,
+        )
 
         display_img(new_image.convert_to_pil())
 
     return new_image
 
 
-def hough_line_detector(image: ImageImpl, epsilon: float, threshold: int, theta_step: int = 7, rho_step: int = 5
-                        ) -> ImageImpl:
+def hough_line_detector(
+    image: ImageImpl,
+    epsilon: float,
+    threshold: int,
+    theta_step: int = 7,
+    rho_step: int = 5,
+) -> ImageImpl:
     border_image = border_detection.canny_detection(image, 3, 10, 10)
 
     D = max(image.height, image.width)
@@ -60,7 +97,9 @@ def hough_line_detector(image: ImageImpl, epsilon: float, threshold: int, theta_
     theta_cos = np.cos(theta_range)
     theta_sin = np.sin(theta_range)
 
-    edge_pixels = np.where(border_image.get_array()[..., 0] == constants.MAX_PIXEL_VALUE)
+    edge_pixels = np.where(
+        border_image.get_array()[..., 0] == constants.MAX_PIXEL_VALUE
+    )
     coordinates = list(zip(edge_pixels[0], edge_pixels[1]))
     accumulator = np.zeros((len(theta_range), len(rho_range)))
 
@@ -68,7 +107,14 @@ def hough_line_detector(image: ImageImpl, epsilon: float, threshold: int, theta_
         for theta_idx in range(len(theta_range)):
             for rho_idx in range(len(rho_range)):
                 # Veo si cumple la ecuacion de la recta
-                if abs(rho_range[rho_idx] - coordinates[p][1] * theta_cos[theta_idx] - coordinates[p][0] * theta_sin[theta_idx]) < epsilon:
+                if (
+                    abs(
+                        rho_range[rho_idx]
+                        - coordinates[p][1] * theta_cos[theta_idx]
+                        - coordinates[p][0] * theta_sin[theta_idx]
+                    )
+                    < epsilon
+                ):
                     accumulator[theta_idx, rho_idx] += 1
 
     result = image.to_rgb()
@@ -107,15 +153,24 @@ def draw_lines(image: ImageImpl, rho: float, theta: float) -> ImageImpl:
     return image
 
 
-def hough_circle_detector(image: ImageImpl, epsilon: float, threshold: int, max_radius: int = 40, a_step: int = 4,
-                          b_step: int = 4, r_step: int = 3) -> ImageImpl:
+def hough_circle_detector(
+    image: ImageImpl,
+    epsilon: float,
+    threshold: int,
+    max_radius: int = 40,
+    a_step: int = 4,
+    b_step: int = 4,
+    r_step: int = 3,
+) -> ImageImpl:
     border_image = border_detection.canny_detection(image, 3, 10, 10)
 
     a_range = np.arange(a_step, image.width - a_step, a_step)
     b_range = np.arange(b_step, image.height - b_step, b_step)
     r_range = np.arange(r_step, max_radius, r_step)
 
-    edge_pixels = np.where(border_image.get_array()[..., 0] == constants.MAX_PIXEL_VALUE)
+    edge_pixels = np.where(
+        border_image.get_array()[..., 0] == constants.MAX_PIXEL_VALUE
+    )
     coordinates = list(zip(edge_pixels[0], edge_pixels[1]))
     accumulator = np.zeros((len(a_range), len(b_range), len(r_range)))
 
@@ -123,7 +178,14 @@ def hough_circle_detector(image: ImageImpl, epsilon: float, threshold: int, max_
         for a_idx in range(len(a_range)):
             for b_idx in range(len(b_range)):
                 for r_idx in range(len(r_range)):
-                    if abs(r_range[r_idx] ** 2 - (coordinates[p][1] - a_range[a_idx]) ** 2 - (coordinates[p][0] - b_range[b_idx]) ** 2) < epsilon:
+                    if (
+                        abs(
+                            r_range[r_idx] ** 2
+                            - (coordinates[p][1] - a_range[a_idx]) ** 2
+                            - (coordinates[p][0] - b_range[b_idx]) ** 2
+                        )
+                        < epsilon
+                    ):
                         accumulator[a_idx, b_idx, r_idx] += 1
 
     result = image.to_rgb()
@@ -131,11 +193,15 @@ def hough_circle_detector(image: ImageImpl, epsilon: float, threshold: int, max_
         for b_idx in range(len(b_range)):
             for r_idx in range(len(r_range)):
                 if accumulator[a_idx, b_idx, r_idx] >= threshold:
-                    result = draw_circle(result, a_range[a_idx], b_range[b_idx], r_range[r_idx], epsilon)
+                    result = draw_circle(
+                        result, a_range[a_idx], b_range[b_idx], r_range[r_idx], epsilon
+                    )
     return result
 
 
-def draw_circle(image: ImageImpl, a: float, b: float, radius: float, epsilon: float) -> ImageImpl:
+def draw_circle(
+    image: ImageImpl, a: float, b: float, radius: float, epsilon: float
+) -> ImageImpl:
     x_start = int(a - radius)
     x_end = int(a + radius)
     y_start = int(b - radius)
@@ -153,7 +219,12 @@ def draw_circle(image: ImageImpl, a: float, b: float, radius: float, epsilon: fl
                     image.array[y, x, 1] = constants.MAX_PIXEL_VALUE
                     image.array[y, x, 2] = 0
                     for i in range(1, 4):
-                        if 0 <= x - 1 and x + 1 < image.width and 0 <= y - 1 and y + 1 < image.height:
+                        if (
+                            0 <= x - 1
+                            and x + 1 < image.width
+                            and 0 <= y - 1
+                            and y + 1 < image.height
+                        ):
                             image.array[y + i, x, 1] = constants.MAX_PIXEL_VALUE
                             image.array[y - i, x, 1] = constants.MAX_PIXEL_VALUE
                             image.array[y, x + i, 1] = constants.MAX_PIXEL_VALUE
@@ -172,8 +243,16 @@ def load_image(filename: str) -> ImageImpl:
     return ImageImpl(image_matrix)
 
 
-def get_object_color(mask_array: np.ndarray, image: ImageImpl, top_left_vertex_x: int, top_left_vertex_y: int,
-                     bottom_right_vertex_x: int, bottom_right_vertex_y: int, lin: dict, lout: dict) -> np.ndarray:
+def get_object_color(
+    mask_array: np.ndarray,
+    image: ImageImpl,
+    top_left_vertex_x: int,
+    top_left_vertex_y: int,
+    bottom_right_vertex_x: int,
+    bottom_right_vertex_y: int,
+    lin: dict,
+    lout: dict,
+) -> np.ndarray:
     color_sum = np.zeros(image.channels)
     image_array = image.get_array()
 
@@ -218,17 +297,28 @@ def get_object_color(mask_array: np.ndarray, image: ImageImpl, top_left_vertex_x
     return color_sum / square_size
 
 
-def iterate_pixel_exchange(mask_array: np.ndarray, image: ImageImpl, lin: dict, lout: dict, max_iterations: int,
-                           object_color: np.ndarray, epsilon: float):
+def iterate_pixel_exchange(
+    mask_array: np.ndarray,
+    image: ImageImpl,
+    lin: dict,
+    lout: dict,
+    max_iterations: int,
+    object_color: np.ndarray,
+    epsilon: float,
+):
     start_time = time.time()
     for i in range(0, max_iterations):
         new_lin = {}
         new_lout = {}
-        iterate_over_lout(mask_array, image, object_color, epsilon, lout, new_lout, new_lin)
+        iterate_over_lout(
+            mask_array, image, object_color, epsilon, lout, new_lout, new_lin
+        )
         iterate_over_lin(mask_array, image, lin, new_lin, new_lout)
         second_lin = {}
         second_lout = {}
-        remove_extra_lin(mask_array, image, new_lin, second_lin, second_lout, object_color, epsilon)
+        remove_extra_lin(
+            mask_array, image, new_lin, second_lin, second_lout, object_color, epsilon
+        )
         remove_extra_lout(mask_array, image, new_lout, second_lin, second_lout)
         lin = second_lin
         lout = second_lout
@@ -236,8 +326,15 @@ def iterate_pixel_exchange(mask_array: np.ndarray, image: ImageImpl, lin: dict, 
     return mask_array, lin, lout
 
 
-def iterate_over_lout(mask_array: np.ndarray, image: ImageImpl, object_color: np.ndarray, epsilon: float, lout: dict,
-                      new_lout: dict, new_lin: dict):
+def iterate_over_lout(
+    mask_array: np.ndarray,
+    image: ImageImpl,
+    object_color: np.ndarray,
+    epsilon: float,
+    lout: dict,
+    new_lout: dict,
+    new_lin: dict,
+):
     directions = [[-1, 0], [0, -1], [1, 0], [0, 1]]
     for pixel in lout:
         current_x = pixel[0]
@@ -249,15 +346,20 @@ def iterate_over_lout(mask_array: np.ndarray, image: ImageImpl, object_color: np
                 x_increment = directions[i][0]
                 y_increment = directions[i][1]
                 if (
-                    0 <= x_increment + current_x < image.width and 0 <= y_increment + current_y < image.height and
-                    mask_array[current_y + y_increment, current_x + x_increment] == 3):
+                    0 <= x_increment + current_x < image.width
+                    and 0 <= y_increment + current_y < image.height
+                    and mask_array[current_y + y_increment, current_x + x_increment]
+                    == 3
+                ):
                     mask_array[current_y + y_increment, current_x + x_increment] = 1
                     new_lout[(current_x + x_increment, current_y + y_increment)] = 1
         else:
             new_lout[(current_x, current_y)] = 1
 
 
-def has_same_color_as_object(image: ImageImpl, y: int, x: int, object_color: np.ndarray, epsilon: float):
+def has_same_color_as_object(
+    image: ImageImpl, y: int, x: int, object_color: np.ndarray, epsilon: float
+):
     if image.channels == 1:
         return abs(image.array[y, x, 0] - object_color) <= epsilon
     else:
@@ -269,7 +371,9 @@ def has_same_color_as_object(image: ImageImpl, y: int, x: int, object_color: np.
         return value <= epsilon
 
 
-def iterate_over_lin(mask_array: np.ndarray, image: ImageImpl, lin: dict, new_lin: dict, new_lout: dict):
+def iterate_over_lin(
+    mask_array: np.ndarray, image: ImageImpl, lin: dict, new_lin: dict, new_lout: dict
+):
     directions = [[-1, 0], [0, -1], [1, 0], [0, 1]]
     for pixel in lin:
         blue_count = 0
@@ -280,7 +384,11 @@ def iterate_over_lin(mask_array: np.ndarray, image: ImageImpl, lin: dict, new_li
             y_increment = directions[i][1]
             new_x = current_x + x_increment
             new_y = current_y + y_increment
-            if 0 <= new_x < image.width and 0 <= new_y < image.height and (new_x, new_y) in new_lout:
+            if (
+                0 <= new_x < image.width
+                and 0 <= new_y < image.height
+                and (new_x, new_y) in new_lout
+            ):
                 blue_count += 1
         if blue_count == 0:
             mask_array[current_y, current_x] = -3
@@ -288,26 +396,45 @@ def iterate_over_lin(mask_array: np.ndarray, image: ImageImpl, lin: dict, new_li
             new_lin[(current_x, current_y)] = -1
 
 
-def remove_extra_lin(mask_array: np.ndarray, image: ImageImpl, lin: dict, second_lin: dict, second_lout: dict,
-                     object_color: np.ndarray, epsilon: float):
+def remove_extra_lin(
+    mask_array: np.ndarray,
+    image: ImageImpl,
+    lin: dict,
+    second_lin: dict,
+    second_lout: dict,
+    object_color: np.ndarray,
+    epsilon: float,
+):
     directions = [[-1, 0], [0, -1], [1, 0], [0, 1]]
     for pixel in lin:
         current_x = pixel[0]
         current_y = pixel[1]
-        if not has_same_color_as_object(image, current_y, current_x, object_color, epsilon):
+        if not has_same_color_as_object(
+            image, current_y, current_x, object_color, epsilon
+        ):
             second_lout[(current_x, current_y)] = 1
             mask_array[current_y, current_x] = 1
             for i in range(0, 4):
                 new_x = current_x + directions[i][1]
                 new_y = current_y + directions[i][0]
-                if 0 <= new_x < image.width and 0 <= new_y < image.height and mask_array[new_y, new_x] == -3:
+                if (
+                    0 <= new_x < image.width
+                    and 0 <= new_y < image.height
+                    and mask_array[new_y, new_x] == -3
+                ):
                     mask_array[new_y, new_x] = -1
                     second_lin[(new_x, new_y)] = -1
         else:
             second_lin[(current_x, current_y)] = -1
 
 
-def remove_extra_lout(mask_array: np.ndarray, image: ImageImpl, lout: dict, second_lin: dict, second_lout: dict):
+def remove_extra_lout(
+    mask_array: np.ndarray,
+    image: ImageImpl,
+    lout: dict,
+    second_lin: dict,
+    second_lout: dict,
+):
     directions = [[-1, 0], [0, -1], [1, 0], [0, 1]]
     for pixel in lout:
         current_x = pixel[0]
@@ -316,7 +443,11 @@ def remove_extra_lout(mask_array: np.ndarray, image: ImageImpl, lout: dict, seco
         for i in range(0, 4):
             new_x = current_x + directions[i][1]
             new_y = current_y + directions[i][0]
-            if 0 <= new_x < image.width and 0 <= new_y < image.height and (new_x, new_y) in second_lin:
+            if (
+                0 <= new_x < image.width
+                and 0 <= new_y < image.height
+                and (new_x, new_y) in second_lin
+            ):
                 lin_count += 1
         if lin_count == 0:
             mask_array[current_y, current_x] = 3
@@ -340,4 +471,3 @@ def generate_image_with_border(mask_array: np.ndarray, image: ImageImpl) -> Imag
                 border_image[y, x, 2] = image_array[y, x, 2]
 
     return ImageImpl.from_array(border_image)
-

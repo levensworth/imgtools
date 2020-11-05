@@ -28,7 +28,7 @@ class Region:
 
         # create rectangle if not yet exist
         # if not self.rect:
-        select_opts2 = dict(dash=(1, 1), fill='', outline='lime green')
+        select_opts2 = dict(dash=(1, 1), fill="", outline="lime green")
         self.rect = self.canvas.create_rectangle(self.x, self.y, 1, 1, **select_opts2)
 
     def on_move_press(self, event):
@@ -58,10 +58,19 @@ class Region:
         self.start_y = None
 
     def is_ready(self):
-        if self.start_x is None or self.start_y is None or self.end_x is None or self.end_y is None:
-            messagebox.showerror(title="Error", message="You have to mark a region before")
+        if (
+            self.start_x is None
+            or self.start_y is None
+            or self.end_x is None
+            or self.end_y is None
+        ):
+            messagebox.showerror(
+                title="Error", message="You have to mark a region before"
+            )
             return False
         elif abs(self.start_x - self.end_x) == 0:
-            messagebox.showerror(title="Error", message="You have to mark a bigger region")
+            messagebox.showerror(
+                title="Error", message="You have to mark a bigger region"
+            )
             return False
         return True

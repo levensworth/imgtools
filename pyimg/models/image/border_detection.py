@@ -5,10 +5,10 @@ import numpy as np
 
 from pyimg.config import constants
 from pyimg.config.constants import MAX_PIXEL_VALUE, MIN_PIXEL_VALUE
-from pyimg.models.image import ImageImpl, operators, linear_adjustment
+from pyimg.models.image import ImageImpl, linear_adjustment, operators
 from pyimg.models.image.thresholding import umbralization_with_two_thresholds
 
-from .filters import gaussian_filter_fast, bilateral_filter, circular_kernel
+from .filters import bilateral_filter, circular_kernel, gaussian_filter_fast
 
 
 def prewitt_detector(a_img: ImageImpl) -> ImageImpl:
@@ -103,7 +103,11 @@ def gaussian_laplacian_detection(
 
 
 def canny_detection(
-    a_img: ImageImpl, kernel_size: int, sigma_s: float, sigma_r: float, four_neighbours: bool = True,
+    a_img: ImageImpl,
+    kernel_size: int,
+    sigma_s: float,
+    sigma_r: float,
+    four_neighbours: bool = True,
 ) -> ImageImpl:
     """
     apply caddy mask and border detection
@@ -143,7 +147,9 @@ def canny_detection(
     # import cv2
     # edges = cv2.Canny(filtered_image.get_array()[..., 0], 100, 200)
 
-    umbralized_image = umbralization_with_two_thresholds(suppressed_image, high_threshold, low_threshold)
+    umbralized_image = umbralization_with_two_thresholds(
+        suppressed_image, high_threshold, low_threshold
+    )
 
     umbralized_image = linear_adjustment(umbralized_image)
 
@@ -179,7 +185,9 @@ def get_angle(horizontal_image: ImageImpl, vertical_image: ImageImpl) -> np.ndar
     return img3
 
 
-def suppress_false_maximums(synthesized_image: ImageImpl, angle_matrix: np.ndarray) -> ImageImpl:
+def suppress_false_maximums(
+    synthesized_image: ImageImpl, angle_matrix: np.ndarray
+) -> ImageImpl:
     synthesized_array = synthesized_image.array[..., 0]
     result = np.array(synthesized_array)
     for i in range(1, result.shape[0] - 1):
@@ -204,7 +212,9 @@ def suppress_false_maximums(synthesized_image: ImageImpl, angle_matrix: np.ndarr
     return ImageImpl.from_array(result[:, :, np.newaxis])
 
 
-def suppress_false_maximums2(synthesized_image: ImageImpl, angle_matrix: np.ndarray) -> ImageImpl:
+def suppress_false_maximums2(
+    synthesized_image: ImageImpl, angle_matrix: np.ndarray
+) -> ImageImpl:
     synthesized_array = synthesized_image.array[..., 0]
     result = np.array(synthesized_array)
     PI = 180
@@ -218,11 +228,15 @@ def suppress_false_maximums2(synthesized_image: ImageImpl, angle_matrix: np.ndar
                 before_pixel = synthesized_array[row, col - 1]
                 after_pixel = synthesized_array[row, col + 1]
 
-            elif (PI / 8 <= direction < 3 * PI / 8) or (9 * PI / 8 <= direction < 11 * PI / 8):
+            elif (PI / 8 <= direction < 3 * PI / 8) or (
+                9 * PI / 8 <= direction < 11 * PI / 8
+            ):
                 before_pixel = synthesized_array[row + 1, col - 1]
                 after_pixel = synthesized_array[row - 1, col + 1]
 
-            elif (3 * PI / 8 <= direction < 5 * PI / 8) or (11 * PI / 8 <= direction < 13 * PI / 8):
+            elif (3 * PI / 8 <= direction < 5 * PI / 8) or (
+                11 * PI / 8 <= direction < 13 * PI / 8
+            ):
                 before_pixel = synthesized_array[row - 1, col]
                 after_pixel = synthesized_array[row + 1, col]
 
@@ -230,7 +244,10 @@ def suppress_false_maximums2(synthesized_image: ImageImpl, angle_matrix: np.ndar
                 before_pixel = synthesized_array[row - 1, col - 1]
                 after_pixel = synthesized_array[row + 1, col + 1]
 
-            if synthesized_array[row, col] >= before_pixel and synthesized_array[row, col] >= after_pixel:
+            if (
+                synthesized_array[row, col] >= before_pixel
+                and synthesized_array[row, col] >= after_pixel
+            ):
                 result[row, col] = synthesized_array[row, col]
 
             # if pix1 > synthesized_array[i, j] or pix2 > synthesized_array[i, j]:
@@ -238,18 +255,33 @@ def suppress_false_maximums2(synthesized_image: ImageImpl, angle_matrix: np.ndar
     return ImageImpl.from_array(result[:, :, np.newaxis])
 
 
-def has_border_neighbours_without_thresholds(image: ImageImpl, x: int, y: int, four_neighbours: bool):
+def has_border_neighbours_without_thresholds(
+    image: ImageImpl, x: int, y: int, four_neighbours: bool
+):
     height, width = image.height, image.width
     image_array = image.get_array()[..., 0]
 
     if four_neighbours:
         increments = [[0, -1], [1, 0], [0, 1], [-1, 0]]
     else:
-        increments = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]]
+        increments = [
+            [-1, -1],
+            [0, -1],
+            [1, -1],
+            [1, 0],
+            [1, 1],
+            [0, 1],
+            [-1, 1],
+            [-1, 0],
+        ]
     for i in range(0, len(increments)):
         new_x = x + increments[i][1]
         new_y = y + increments[i][0]
-        if 0 <= new_x < width and 0 <= new_y < height and image_array[new_y, new_x] == constants.MAX_PIXEL_VALUE:
+        if (
+            0 <= new_x < width
+            and 0 <= new_y < height
+            and image_array[new_y, new_x] == constants.MAX_PIXEL_VALUE
+        ):
             return True
     return False
 
@@ -263,16 +295,17 @@ def hysteresis(image: ImageImpl, four_neighbours: bool = True) -> ImageImpl:
         for x in range(0, width):
             if image_array[y, x] == constants.MAX_PIXEL_VALUE:
                 border_image[y, x] = constants.MAX_PIXEL_VALUE
-            elif image_array[y, x] == constants.MAX_PIXEL_VALUE / 2 and \
-                has_border_neighbours_without_thresholds(image, x, y, four_neighbours):
+            elif image_array[
+                y, x
+            ] == constants.MAX_PIXEL_VALUE / 2 and has_border_neighbours_without_thresholds(
+                image, x, y, four_neighbours
+            ):
                 border_image[y, x] = constants.MAX_PIXEL_VALUE
 
     return ImageImpl(border_image[:, :, np.newaxis])
 
 
-def susan_detection(
-    a_img: ImageImpl, threshold: int
-) -> ImageImpl:
+def susan_detection(a_img: ImageImpl, threshold: int) -> ImageImpl:
     """
 
     :param a_img:

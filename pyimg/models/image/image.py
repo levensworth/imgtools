@@ -60,7 +60,9 @@ class ImageImpl(Matrix):
 
     def to_gray(self):
         if self.channels == 3:
-            return ImageImpl.from_array(np.dot(self.array[..., :3], [0.2989, 0.5870, 0.1140])[:, :, np.newaxis])
+            return ImageImpl.from_array(
+                np.dot(self.array[..., :3], [0.2989, 0.5870, 0.1140])[:, :, np.newaxis]
+            )
         return self
 
     def to_rgb(self):

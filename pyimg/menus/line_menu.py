@@ -25,9 +25,15 @@ class LineMenu:
                 image_io,
                 "Apply",
                 lambda image, region, epsilon, max_iterations: display_linear_adj_image_wrapper(
-                    line_detection.pixel_exchange(image, region.start_x, region.start_y, region.end_x, region.end_y,
-                                                  epsilon, int(max_iterations))
-
+                    line_detection.pixel_exchange(
+                        image,
+                        region.start_x,
+                        region.start_y,
+                        region.end_x,
+                        region.end_y,
+                        epsilon,
+                        int(max_iterations),
+                    )
                 ),
                 params=["epsilon", "max_iterations"],
             ).generate_interface,
@@ -39,10 +45,17 @@ class LineMenu:
                 image_io,
                 "Apply",
                 lambda image, region, epsilon, max_iterations, quantity: display_linear_adj_image_wrapper(
-                    line_detection.pixel_exchange_in_sequence(image, image_io.file_name, region.start_x, region.start_y,
-                                                              region.end_x, region.end_y, epsilon, int(max_iterations),
-                                                              int(quantity))
-
+                    line_detection.pixel_exchange_in_sequence(
+                        image,
+                        image_io.file_name,
+                        region.start_x,
+                        region.start_y,
+                        region.end_x,
+                        region.end_y,
+                        epsilon,
+                        int(max_iterations),
+                        int(quantity),
+                    )
                 ),
                 params=["epsilon", "max_iterations", "quantity"],
             ).generate_interface,
@@ -58,7 +71,6 @@ class LineMenu:
                 "Apply",
                 lambda image, epsilon, threshold: display_linear_adj_image_wrapper(
                     line_detection.hough_line_detector(image, epsilon, int(threshold))
-
                 ),
                 params=["epsilon", "threshold"],
             ).generate_interface,
@@ -71,7 +83,6 @@ class LineMenu:
                 "Apply",
                 lambda image, epsilon, threshold: display_linear_adj_image_wrapper(
                     line_detection.hough_circle_detector(image, epsilon, int(threshold))
-
                 ),
                 params=["epsilon", "threshold"],
             ).generate_interface,

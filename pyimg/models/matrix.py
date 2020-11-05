@@ -33,7 +33,6 @@ class Matrix:
     def min_value(self) -> float:
         return np.amin(self.array)
 
-
     def apply_filter(self, kernel, fn) -> None:
         # lets pad the image for the aforention kernel
         kernel_size = kernel.shape[0]
@@ -55,10 +54,8 @@ class Matrix:
                 window = window * kernel
                 val = fn(window)
                 if val < 0:
-                    print('here')
+                    print("here")
                 self.array[i, j, channel] = val
-
-
 
     def convolution(self, kernel_size: int, fn) -> None:
         """

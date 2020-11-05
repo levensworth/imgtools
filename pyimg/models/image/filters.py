@@ -1,6 +1,7 @@
 import math
 from copy import copy
 
+import cv2
 import numpy as np
 import scipy.stats as st
 from medpy.filter.smoothing import anisotropic_diffusion as ansio_dif
@@ -8,8 +9,6 @@ from scipy import ndimage
 
 from pyimg.config.constants import MAX_PIXEL_VALUE
 from pyimg.models.image import ImageImpl
-
-import cv2
 
 
 def mean_filter(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
@@ -227,7 +226,7 @@ def high_filter_fast(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
 
 
 def circular_kernel(kernel_size: int):
-    return cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(kernel_size,kernel_size))
+    return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
 
 
 def threshold_filter(a_img: ImageImpl, threshold: float) -> ImageImpl:
