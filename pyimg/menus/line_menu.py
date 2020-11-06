@@ -81,9 +81,10 @@ class LineMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "Apply",
-                lambda image, epsilon, threshold: display_linear_adj_image_wrapper(
-                    line_detection.hough_circle_detector(image, epsilon, int(threshold))
+                lambda image, threshold, min_radius, max_radius, steps: display_linear_adj_image_wrapper(
+                    line_detection.hough_circle_detector(image, float(threshold), int(min_radius), int(max_radius),
+                                                       int(steps))
                 ),
-                params=["epsilon", "threshold"],
+                params=["threshold", "min_radius", "max_radius", "steps"],
             ).generate_interface,
         )

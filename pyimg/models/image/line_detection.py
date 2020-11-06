@@ -1,14 +1,17 @@
-import math
 import re
 import time
 
 import numpy as np
+
+from PIL import Image, ImageDraw
 
 from pyimg.config import constants
 from pyimg.menus.io_menu import ImageIO
 from pyimg.models.image import ImageImpl, border_detection
 from pyimg.modules.image_io import display_img
 
+from math import sqrt, pi, cos, sin
+from collections import defaultdict
 
 def pixel_exchange(
     image: ImageImpl,
@@ -155,47 +158,56 @@ def draw_lines(image: ImageImpl, rho: float, theta: float) -> ImageImpl:
 
 def hough_circle_detector(
     image: ImageImpl,
-    epsilon: float,
-    threshold: int,
+    threshold: int = 0.4,
+    min_radius: int = 10,
     max_radius: int = 40,
-    a_step: int = 4,
-    b_step: int = 4,
-    r_step: int = 3,
+    steps: int = 100
 ) -> ImageImpl:
-    border_image = border_detection.canny_detection(image, 3, 10, 10)
 
-    a_range = np.arange(a_step, image.width - a_step, a_step)
-    b_range = np.arange(b_step, image.height - b_step, b_step)
-    r_range = np.arange(r_step, max_radius, r_step)
+    img = Image.fromarray(image.to_rgb().get_array())
+    img = img.resize((300, 200), Image.ANTIALIAS)
+    image = ImageImpl(np.array(img))
+
+    border_image = border_detection.canny_detection(image, 3, 10, 10)
 
     edge_pixels = np.where(
         border_image.get_array()[..., 0] == constants.MAX_PIXEL_VALUE
     )
-    coordinates = list(zip(edge_pixels[0], edge_pixels[1]))
-    accumulator = np.zeros((len(a_range), len(b_range), len(r_range)))
 
-    for p in range(len(coordinates)):
-        for a_idx in range(len(a_range)):
-            for b_idx in range(len(b_range)):
-                for r_idx in range(len(r_range)):
-                    if (
-                        abs(
-                            r_range[r_idx] ** 2
-                            - (coordinates[p][1] - a_range[a_idx]) ** 2
-                            - (coordinates[p][0] - b_range[b_idx]) ** 2
-                        )
-                        < epsilon
-                    ):
-                        accumulator[a_idx, b_idx, r_idx] += 1
+    rmin = min_radius
+    rmax = max_radius
+    points = []
+    for r in range(rmin, rmax + 1):
+        for t in range(steps):
+            points.append((r, int(r * cos(2 * pi * t / steps)), int(r * sin(2 * pi * t / steps))))
+
+    coordinates = list(zip(edge_pixels[0], edge_pixels[1]))
+    acc = defaultdict(int)
+
+
+    for y, x in coordinates:
+        for r, dx, dy in points:
+            a = x - dx
+            b = y - dy
+            acc[(a, b, r)] += 1
+
+    circles = []
+    iterator = sorted(acc.items(), key=lambda i: -i[1])
+    for k, v in iterator:
+        x, y, r = k
+        if v / steps >= threshold and all((x - xc) ** 2 + (y - yc) ** 2 > rc ** 2 for xc, yc, rc in circles):
+            print(v / steps, x, y, r)
+            circles.append((x, y, r))
+
 
     result = image.to_rgb()
-    for a_idx in range(len(a_range)):
-        for b_idx in range(len(b_range)):
-            for r_idx in range(len(r_range)):
-                if accumulator[a_idx, b_idx, r_idx] >= threshold:
-                    result = draw_circle(
-                        result, a_range[a_idx], b_range[b_idx], r_range[r_idx], epsilon
-                    )
+
+    img = Image.fromarray(result.get_array())
+    draw_result = ImageDraw.Draw(img)
+    for x, y, r in circles:
+        draw_result.ellipse((x - r, y - r, x + r, y + r), outline=(255, 0, 0, 0))
+
+    result = ImageImpl(np.array(img))
     return result
 
 
