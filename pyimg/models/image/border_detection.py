@@ -260,14 +260,29 @@ def susan_detection(a_img: ImageImpl, threshold: int) -> ImageImpl:
     :param threshold:
     :return:
     """
-    circ_kernel = circular_kernel(7)
-    a_img.apply_filter(circ_kernel, lambda m: _calculate_c_for_susan(m, threshold))
+    # circ_kernel = circular_kernel(7)
+    circ_kernel = np.array([
+    [0, 0, 1, 1, 1, 0, 0], 
+    [0, 1, 1, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 1, 1, 0],
+    [0, 0, 1, 1, 1, 0, 0]
+])
+    a_img.apply_filter(circ_kernel, lambda m: _calculate_c_for_susan(m, circ_kernel, threshold))
     a_img.array = np.uint8(a_img.array > 0.75)
     return a_img.mul_scalar(255)
 
 
-def _calculate_c_for_susan(matrix, threshold):
+def _calculate_c_for_susan(matrix, kernel, threshold):
     c = 0
+
+    coordinates = np.where(
+        kernel == 1
+    )
+
+    coordinates = list(zip(coordinates[0], coordinates[1]))
 
     center_val = int(matrix.shape[0] / 2)
     center_val = matrix[center_val, center_val]
@@ -275,9 +290,15 @@ def _calculate_c_for_susan(matrix, threshold):
     matrix = np.abs(matrix - center_val)
     matrix = matrix < threshold
 
-    try:
-        v = sum(np.sum(matrix)) - 12 if center_val < threshold else sum(np.sum(matrix))
-        return 1 - v / 37
-    except TypeError:
-        v = np.sum(matrix) - 12 if center_val < threshold else np.sum(matrix)
-        return 1 - v / 37
+    for y, x in coordinates:
+        if matrix[x, y]:
+            c += 1
+
+    return 1 - (c / 37)
+
+    # try:
+    #     v = sum(np.sum(matrix)) - 12 if center_val < threshold else sum(np.sum(matrix))
+    #     return 1 - v / 37
+    # except TypeError:
+    #     v = np.sum(matrix) - 12 if center_val < threshold else np.sum(matrix)
+    #     return 1 - v / 37
