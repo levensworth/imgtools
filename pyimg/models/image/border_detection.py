@@ -130,7 +130,9 @@ def canny_detection(
     vertical_image = border_images[2]
 
     # this calcualtes the direction in radians
-    angle_matrix = np.arctan2(horizontal_image.array[..., 0], vertical_image.array[..., 0])
+    angle_matrix = np.arctan2(
+        horizontal_image.array[..., 0], vertical_image.array[..., 0]
+    )
     # now we convert to degrees
     angle_matrix = np.rad2deg(angle_matrix)
     angle_matrix[angle_matrix < 0] += 180
@@ -183,9 +185,12 @@ def suppress_false_maximums2(
                 before_pixel = synthesized_array[i + 1, j + 1]
 
             else:
-                ValueError('Angle not valid')
+                ValueError("Angle not valid")
 
-            if synthesized_array[i, j] >= after_pixel and synthesized_array[i, j] >= before_pixel:
+            if (
+                synthesized_array[i, j] >= after_pixel
+                and synthesized_array[i, j] >= before_pixel
+            ):
                 result[i, j] = synthesized_array[i, j]
             else:
                 result[i, j] = 0
@@ -223,7 +228,12 @@ def has_border_neighbours_without_thresholds(
     return False
 
 
-def hysteresis(image: ImageImpl, four_neighbours: bool = True, weak: int = int(constants.MAX_PIXEL_VALUE/2), strong: int = constants.MAX_PIXEL_VALUE) -> ImageImpl:
+def hysteresis(
+    image: ImageImpl,
+    four_neighbours: bool = True,
+    weak: int = int(constants.MAX_PIXEL_VALUE / 2),
+    strong: int = constants.MAX_PIXEL_VALUE,
+) -> ImageImpl:
     height, width = image.height, image.width
     image_array = image.get_array()[..., 0]
 
@@ -232,7 +242,9 @@ def hysteresis(image: ImageImpl, four_neighbours: bool = True, weak: int = int(c
     for i in range(1, width - 1):
         for j in range(1, height - 1):
             if border_image[i, j] == weak:
-                if has_border_neighbours_without_thresholds(image, i, j, four_neighbours):
+                if has_border_neighbours_without_thresholds(
+                    image, i, j, four_neighbours
+                ):
                     border_image[i, j] = strong
                 else:
                     border_image[i, j] = 0

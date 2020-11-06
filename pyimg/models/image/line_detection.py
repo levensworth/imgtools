@@ -1,8 +1,9 @@
 import re
 import time
+from collections import defaultdict
+from math import cos, pi, sin, sqrt
 
 import numpy as np
-
 from PIL import Image, ImageDraw
 
 from pyimg.config import constants
@@ -10,8 +11,6 @@ from pyimg.menus.io_menu import ImageIO
 from pyimg.models.image import ImageImpl, border_detection
 from pyimg.modules.image_io import display_img
 
-from math import sqrt, pi, cos, sin
-from collections import defaultdict
 
 def pixel_exchange(
     image: ImageImpl,
@@ -161,7 +160,7 @@ def hough_circle_detector(
     threshold: int = 0.4,
     min_radius: int = 10,
     max_radius: int = 40,
-    steps: int = 100
+    steps: int = 100,
 ) -> ImageImpl:
 
     img = Image.fromarray(image.to_rgb().get_array())
@@ -179,11 +178,12 @@ def hough_circle_detector(
     points = []
     for r in range(rmin, rmax + 1):
         for t in range(steps):
-            points.append((r, int(r * cos(2 * pi * t / steps)), int(r * sin(2 * pi * t / steps))))
+            points.append(
+                (r, int(r * cos(2 * pi * t / steps)), int(r * sin(2 * pi * t / steps)))
+            )
 
     coordinates = list(zip(edge_pixels[0], edge_pixels[1]))
     acc = defaultdict(int)
-
 
     for y, x in coordinates:
         for r, dx, dy in points:
@@ -195,10 +195,11 @@ def hough_circle_detector(
     iterator = sorted(acc.items(), key=lambda i: -i[1])
     for k, v in iterator:
         x, y, r = k
-        if v / steps >= threshold and all((x - xc) ** 2 + (y - yc) ** 2 > rc ** 2 for xc, yc, rc in circles):
+        if v / steps >= threshold and all(
+            (x - xc) ** 2 + (y - yc) ** 2 > rc ** 2 for xc, yc, rc in circles
+        ):
             print(v / steps, x, y, r)
             circles.append((x, y, r))
-
 
     result = image.to_rgb()
 
