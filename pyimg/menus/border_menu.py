@@ -157,11 +157,11 @@ class BorderMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "susan",
-                lambda image, threshold, low_filter, high_filter: display_linear_adj_image_wrapper(
+                lambda image, threshold, low_filter, high_filter, color: display_linear_adj_image_wrapper(
                     border_detection.susan_detection(
-                        image, threshold, low_filter, high_filter
+                        image, threshold, low_filter, high_filter, int(color)
                     )
                 ),
-                params=["threshold", "low_filter", "high_filter"],
+                params=["threshold", "low_filter", "high_filter", "color"],
             ).generate_interface,
         )

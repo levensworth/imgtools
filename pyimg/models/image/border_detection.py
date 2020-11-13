@@ -255,7 +255,7 @@ def hysteresis(
 
 
 def susan_detection(
-    a_img: ImageImpl, threshold: int, low_filter: float, high_filter: float
+    a_img: ImageImpl, threshold: int, low_filter: float, high_filter: float, color: int
 ) -> ImageImpl:
     """
     :param a_img:
@@ -285,7 +285,9 @@ def susan_detection(
     border_img = np.uint8(a_img.array > low_filter)
     b_img = border_img - np.uint8(a_img.array > high_filter)
     border_img = np.zeros((border_img.shape[0], border_img.shape[1], 3))
-    border_img[:, :, 0] = b_img[:, :, 0]
+    # because we only have 3 channels
+    color = color % 3
+    border_img[:, :, color] = b_img[:, :, 0]
 
     border_img = ImageImpl(border_img)
 
