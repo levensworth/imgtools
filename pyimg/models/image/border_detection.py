@@ -107,6 +107,8 @@ def canny_detection(
     kernel_size: int,
     sigma_s: float,
     sigma_r: float,
+    high_threshold: float,
+    low_threshold: float,
     four_neighbours: bool = True,
 ) -> ImageImpl:
     """
@@ -139,8 +141,8 @@ def canny_detection(
 
     suppressed_image = suppress_false_maximums2(synthesized_image, angle_matrix)
 
-    high_threshold = np.amax(suppressed_image.array) * 0.15
-    low_threshold = np.amax(suppressed_image.array) * 0.05
+    # high_threshold = np.amax(suppressed_image.array) * 0.15
+    # low_threshold = np.amax(suppressed_image.array) * 0.05
 
     umbralized_image = umbralization_with_two_thresholds(
         suppressed_image, high_threshold, low_threshold
@@ -252,35 +254,53 @@ def hysteresis(
     return ImageImpl(border_image[:, :, np.newaxis])
 
 
-def susan_detection(a_img: ImageImpl, threshold: int) -> ImageImpl:
+def susan_detection(
+    a_img: ImageImpl, threshold: int, low_filter: float, high_filter: float
+) -> ImageImpl:
     """
-
     :param a_img:
     :param kernel_size:
     :param threshold:
     :return:
     """
     # circ_kernel = circular_kernel(7)
-    circ_kernel = np.array([
-    [0, 0, 1, 1, 1, 0, 0], 
-    [0, 1, 1, 1, 1, 1, 0],
-    [1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1],
-    [0, 1, 1, 1, 1, 1, 0],
-    [0, 0, 1, 1, 1, 0, 0]
-])
-    a_img.apply_filter(circ_kernel, lambda m: _calculate_c_for_susan(m, circ_kernel, threshold))
-    a_img.array = np.uint8(a_img.array > 0.75)
-    return a_img.mul_scalar(255)
+    circ_kernel = np.array(
+        [
+            [0, 0, 1, 1, 1, 0, 0],
+            [0, 1, 1, 1, 1, 1, 0],
+            [1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 1, 1, 0],
+            [0, 0, 1, 1, 1, 0, 0],
+        ]
+    )
+
+    original = ImageImpl(a_img.get_array())
+    a_img.apply_filter(
+        circ_kernel, lambda m: _calculate_c_for_susan(m, circ_kernel, threshold)
+    )
+    # a_img.array = np.uint8(a_img.array > 0.75)
+
+    border_img = np.uint8(a_img.array > low_filter)
+    b_img = border_img - np.uint8(a_img.array > high_filter)
+    border_img = np.zeros((border_img.shape[0], border_img.shape[1], 3))
+    border_img[:, :, 0] = b_img[:, :, 0]
+
+    border_img = ImageImpl(border_img)
+
+    result = border_img.mul_scalar(255)
+
+    original = original.to_rgb()
+
+    # result.add_image(original)
+    return original.add(result)
 
 
 def _calculate_c_for_susan(matrix, kernel, threshold):
     c = 0
 
-    coordinates = np.where(
-        kernel == 1
-    )
+    coordinates = np.where(kernel == 1)
 
     coordinates = list(zip(coordinates[0], coordinates[1]))
 
@@ -290,15 +310,8 @@ def _calculate_c_for_susan(matrix, kernel, threshold):
     matrix = np.abs(matrix - center_val)
     matrix = matrix < threshold
 
-    for y, x in coordinates:
+    for x, y in coordinates:
         if matrix[x, y]:
             c += 1
 
     return 1 - (c / 37)
-
-    # try:
-    #     v = sum(np.sum(matrix)) - 12 if center_val < threshold else sum(np.sum(matrix))
-    #     return 1 - v / 37
-    # except TypeError:
-    #     v = np.sum(matrix) - 12 if center_val < threshold else np.sum(matrix)
-    #     return 1 - v / 37

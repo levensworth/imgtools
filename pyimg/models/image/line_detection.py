@@ -161,13 +161,17 @@ def hough_circle_detector(
     min_radius: int = 10,
     max_radius: int = 40,
     steps: int = 100,
+    high_threshold: float = 75,
+    low_threshold: float = 35,
 ) -> ImageImpl:
 
     img = Image.fromarray(image.to_rgb().get_array())
     img = img.resize((300, 200), Image.ANTIALIAS)
     image = ImageImpl(np.array(img))
 
-    border_image = border_detection.canny_detection(image, 3, 10, 10)
+    border_image = border_detection.canny_detection(
+        image, 3, 10, high_threshold, low_threshold, 10
+    )
 
     edge_pixels = np.where(
         border_image.get_array()[..., 0] == constants.MAX_PIXEL_VALUE

@@ -130,12 +130,24 @@ class BorderMenu:
             command=UnaryWithBoolParamsOperation(
                 image_io,
                 "Canny",
-                lambda image, sigma_s, sigma_r, kernel_size, four_neighbours: display_linear_adj_image_wrapper(
+                lambda image, sigma_s, sigma_r, kernel_size, four_neighbours, high_threshold, low_threshold: display_linear_adj_image_wrapper(
                     border_detection.canny_detection(
-                        image, kernel_size, sigma_s, sigma_r, four_neighbours
+                        image,
+                        kernel_size,
+                        sigma_s,
+                        sigma_r,
+                        high_threshold,
+                        low_threshold,
+                        four_neighbours,
                     )
                 ),
-                params=["sigma_s", "sigma_r", "kernel_size"],
+                params=[
+                    "sigma_s",
+                    "sigma_r",
+                    "kernel_size",
+                    "high_threshold",
+                    "low_threshold",
+                ],
                 bool_params=[("four_neighbours", "eight_neighbours")],
             ).generate_interface,
         )
@@ -145,12 +157,11 @@ class BorderMenu:
             command=UnaryWithParamsImageOperation(
                 image_io,
                 "susan",
-                lambda image, threshold: display_linear_adj_image_wrapper(
+                lambda image, threshold, low_filter, high_filter: display_linear_adj_image_wrapper(
                     border_detection.susan_detection(
-                        image,
-                        threshold,
+                        image, threshold, low_filter, high_filter
                     )
                 ),
-                params=["threshold"],
+                params=["threshold", "low_filter", "high_filter"],
             ).generate_interface,
         )
