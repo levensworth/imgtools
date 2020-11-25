@@ -144,7 +144,7 @@ class BorderMenu:
             label="Susan Border Detector",
             command=UnaryWithParamsImageOperation(
                 image_io,
-                "susan",
+                "Susan",
                 lambda image, threshold: display_linear_adj_image_wrapper(
                     border_detection.susan_detection(
                         image,
@@ -152,5 +152,23 @@ class BorderMenu:
                     )
                 ),
                 params=["threshold"],
+            ).generate_interface,
+        )
+
+        border_menu.add_command(
+            label="Harris Border Detector",
+            command=UnaryWithParamsImageOperation(
+                image_io,
+                "Harris",
+                lambda image, threshold, k, kernel_size, sigma: display_linear_adj_image_wrapper(
+                    border_detection.harris_detection(
+                        image,
+                        threshold,
+                        k,
+                        kernel_size,
+                        sigma
+                    )
+                ),
+                params=["threshold", "k", "kernel_size", "sigma"],
             ).generate_interface,
         )

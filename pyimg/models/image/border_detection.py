@@ -281,3 +281,37 @@ def _calculate_c_for_susan(matrix, threshold):
     except TypeError:
         v = np.sum(matrix) - 12 if center_val < threshold else np.sum(matrix)
         return 1 - v / 37
+
+
+def harris_detection(a_img: ImageImpl, threshold: int, k: float = 0.04,
+                     kernel_size: int = 7, sigma: float = 2) -> ImageImpl:
+
+    gray_image = a_img.to_gray()
+
+    border_images = sobel_detector(gray_image, True)
+
+    horizontal_image = border_images[1]
+    vertical_image = border_images[2]
+
+    ix_squared = gaussian_filter_fast(horizontal_image.mul(horizontal_image), kernel_size, sigma)
+    iy_squared = gaussian_filter_fast(vertical_image.mul(vertical_image), kernel_size, sigma)
+
+    ixy = gaussian_filter_fast(horizontal_image.mul(vertical_image), kernel_size, sigma)
+    ixy_squared = ixy.mul(ixy)
+
+    trace = ix_squared.add(iy_squared)
+    det = ix_squared.mul(iy_squared).sub(ixy_squared)
+    r = det.sub(trace.mul(trace).mul_scalar(k))
+    r = linear_adjustment(r)
+
+    min_value = int(np.max(r.get_array()) * threshold)
+    result = a_img.to_rgb()
+
+    for y in range(0, result.height):
+        for x in range(0, result.width):
+            if r.array[y, x, 0] >= min_value:
+                result.array[y, x, 0] = constants.MAX_PIXEL_VALUE
+                result.array[y, x, 1] = 0
+                result.array[y, x, 2] = 0
+
+    return result
