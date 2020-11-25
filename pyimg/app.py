@@ -7,6 +7,7 @@ from pyimg.menus.info_menu import InfoImageMenu
 from pyimg.menus.io_menu import ImageMenu
 from pyimg.menus.line_menu import LineMenu
 from pyimg.menus.noise_menu import NoiseImageMenu
+from pyimg.menus.object_recognition_menu import ObjectRecognitionMenu
 from pyimg.menus.point_operators import PointOperatorMenu
 from pyimg.menus.threshold_menu import ThresholdMenu
 
@@ -55,6 +56,7 @@ class App:
         BorderMenu(menubar=menubar, image_io=image_menu.image_io)
         LineMenu(menubar=menubar, image_io=image_menu.image_io)
         ThresholdMenu(menubar=menubar, image_io=image_menu.image_io)
+        ObjectRecognitionMenu(menubar=menubar, image_io=image_menu.image_io)
 
 
 app = App()
