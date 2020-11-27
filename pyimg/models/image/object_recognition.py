@@ -15,7 +15,7 @@ def sift_method(a_img: ImageImpl) -> (ImageImpl, List, List):
     return gray_image, key_points, descriptors
 
 
-def compare_images_sith(img1: ImageImpl, img2: ImageImpl, threshold, acceptance
+def compare_images_sift(img1: ImageImpl, img2: ImageImpl, threshold, acceptance
                         ) -> (ImageImpl, bool, int, int, int):
     gray1, key_points1, descriptors1 = sift_method(img1)
     gray2, key_points2, descriptors2 = sift_method(img2)

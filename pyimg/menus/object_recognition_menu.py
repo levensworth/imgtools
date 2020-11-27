@@ -41,7 +41,7 @@ class ObjectRecognitionMenu:
                 image_io,
                 "Apply",
                 lambda image1, image2, threshold, acceptance: display_result(
-                    *object_recognition.compare_images_sith(image1, image2, threshold, acceptance)
+                    *object_recognition.compare_images_sift(image1, image2, threshold, acceptance)
                 ),
                 params=["threshold", "acceptance"],
             ).generate_interface,
