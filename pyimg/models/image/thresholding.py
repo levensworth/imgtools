@@ -95,3 +95,24 @@ def _compute_variance(
 
 def _get_threshold_from_variance(variances: np.ndarray) -> int:
     return int(np.argmax(variances))
+
+
+def umbralization_with_two_thresholds(
+    a_img: ImageImpl, high_threshold: float, low_threshold: float
+) -> ImageImpl:
+    image_array = a_img.get_array()
+    res = np.zeros_like(image_array)
+
+    weak = np.int32(constants.MAX_PIXEL_VALUE / 2)
+    strong = np.int32(constants.MAX_PIXEL_VALUE)
+
+    strong_i, strong_j, strong_k = np.where(image_array >= high_threshold)
+
+    weak_i, weak_j, weak_k = np.where(
+        (image_array <= high_threshold) & (image_array >= low_threshold)
+    )
+
+    res[strong_i, strong_j, strong_k] = strong
+    res[weak_i, weak_j, weak_k] = weak
+
+    return ImageImpl.from_array(res)

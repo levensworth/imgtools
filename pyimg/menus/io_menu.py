@@ -14,10 +14,11 @@ from pyimg.modules import image_io
 class ImageIO:
     def __init__(self, interface):
         self.interface = interface
+        self.file_name = ""
 
     def full_load_image(self):
-        file_name = self.choose_file_name("Select file")
-        image = self.load_image(file_name)
+        self.file_name = self.choose_file_name("Select file")
+        image = self.load_image(self.file_name)
 
         # PhotoImage class is used to add image to widgets, icons etc
         image_disp = ImageTk.PhotoImage(image)

@@ -1,6 +1,7 @@
 import math
 from copy import copy
 
+import cv2
 import numpy as np
 import scipy.stats as st
 from medpy.filter.smoothing import anisotropic_diffusion as ansio_dif
@@ -222,6 +223,10 @@ def high_filter_fast(a_img: ImageImpl, kernel_size: int) -> ImageImpl:
         kernel,
     )
     return a_img
+
+
+def circular_kernel(kernel_size: int):
+    return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
 
 
 def threshold_filter(a_img: ImageImpl, threshold: float) -> ImageImpl:

@@ -3,24 +3,12 @@ import os
 from tkinter import Menu, messagebox
 
 from pyimg.config import constants
-from pyimg.menus.io_menu import ImageIO
-from pyimg.menus.operation_interface import (UnaryImageOperation,
-                                             UnaryWithParamsImageOperation)
+from pyimg.menus.operation_interface import UnaryWithBoolParamsOperation
 from pyimg.models.image import ImageImpl, noise, operators
 from pyimg.models.random_number.generator import (ExponentialGenerator,
                                                   GaussianGenerator, Generator,
                                                   RayleighGenerator)
 from pyimg.modules.image_io import display_img, save_img
-
-
-class NoiseOperation(UnaryWithParamsImageOperation):
-    def __init__(self, image_io: ImageIO, button_text: str, func, params, bool_params):
-        super(NoiseOperation, self).__init__(image_io, button_text, func, params)
-        self.bool_params = bool_params
-        self.params = self.params + self.bool_params
-
-        for param in self.bool_params:
-            self.add_radio_button_input(param)
 
 
 def noise_image_wrapper(image: ImageImpl, generator: Generator, **kwargs):
@@ -84,7 +72,7 @@ class NoiseImageMenu:
 
         noise_menu.add_command(
             label="Gaussian",
-            command=NoiseOperation(
+            command=UnaryWithBoolParamsOperation(
                 image_io,
                 "Apply Gaussian Noise",
                 lambda image, **kwargs: noise_image_wrapper(
@@ -96,7 +84,7 @@ class NoiseImageMenu:
         )
         noise_menu.add_command(
             label="Rayleigh",
-            command=NoiseOperation(
+            command=UnaryWithBoolParamsOperation(
                 image_io,
                 "Apply Rayleigh Noise",
                 lambda image, **kwargs: noise_image_wrapper(
@@ -108,7 +96,7 @@ class NoiseImageMenu:
         )
         noise_menu.add_command(
             label="Exponential",
-            command=NoiseOperation(
+            command=UnaryWithBoolParamsOperation(
                 image_io,
                 "Apply Exponential Noise",
                 lambda image, **kwargs: noise_image_wrapper(
@@ -120,7 +108,7 @@ class NoiseImageMenu:
         )
         noise_menu.add_command(
             label="Salt and Pepper",
-            command=NoiseOperation(
+            command=UnaryWithBoolParamsOperation(
                 image_io,
                 "Apply Salt and Pepper",
                 lambda image, **kwargs: salt_peper_image_wrapper(image, **kwargs),

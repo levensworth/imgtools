@@ -3,6 +3,7 @@ from tkinter import BooleanVar, Entry, messagebox, ttk
 
 from pyimg.config import constants as constants
 from pyimg.menus.io_menu import ImageIO
+from pyimg.widget.region_selector import Region
 
 
 class ImageOperationInput:
@@ -34,6 +35,8 @@ class ImageOperation(ABC):
         self.button_text = button_text
         self.extra_params = {}
         self.extra_bool_params = {}
+        self.with_region = False
+        self.region = None
 
     @abstractmethod
     def command_apply(self):
@@ -76,6 +79,9 @@ class ImageOperation(ABC):
         extra_row = int(len(self.extra_params) > 0)
         extra_row = extra_row + int(len(self.extra_bool_params) > 0)
         add_button.grid(row=1 + extra_row, column=0)
+
+        if self.with_region:
+            self.region = Region()
 
     def add_button_input(self, param_text):
         self.extra_params[param_text] = None
@@ -131,6 +137,46 @@ class UnaryWithParamsImageOperation(UnaryImageOperation):
         if self.is_ready():
             image = self.image_input.get_input()[0]
             return self.func(**{**{"image": image}, **self.get_params()})
+        else:
+            messagebox.showerror(
+                title="Error",
+                message="You need to upload one image for this operation and set the parameters.",
+            )
+
+
+class UnaryWithBoolParamsOperation(UnaryWithParamsImageOperation):
+    def __init__(self, image_io: ImageIO, button_text: str, func, params, bool_params):
+        super(UnaryWithBoolParamsOperation, self).__init__(
+            image_io, button_text, func, params
+        )
+        self.bool_params = bool_params
+        self.params = self.params + self.bool_params
+
+        for param in self.bool_params:
+            self.add_radio_button_input(param)
+
+
+class UnaryWithParamsAndRegionOperation(UnaryWithParamsImageOperation):
+    def __init__(self, image_io: ImageIO, button_text: str, func, params):
+        super(UnaryWithParamsAndRegionOperation, self).__init__(
+            image_io, button_text, func, params
+        )
+        self.with_region = True
+        self.params = self.params
+
+    def is_ready(self) -> bool:
+        if super().is_ready():
+            if len(self.params) == len(self.get_params()) and self.region.is_ready():
+                return True
+            self.region.reset_region_selector()
+        return False
+
+    def command_apply(self):
+        if self.is_ready():
+            image = self.image_input.get_input()[0]
+            return self.func(
+                **{**{"image": image, "region": self.region}, **self.get_params()}
+            )
         else:
             messagebox.showerror(
                 title="Error",
