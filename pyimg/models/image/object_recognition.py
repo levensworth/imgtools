@@ -21,8 +21,8 @@ def compare_images_sift(img1: ImageImpl, img2: ImageImpl, threshold, acceptance
     gray1, key_points1, descriptors1 = sift_method(img1)
     gray2, key_points2, descriptors2 = sift_method(img2)
 
-    # bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
-    bf = L2Matcher()
+    bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
+    #bf = L2Matcher()
 
     matches = bf.match(descriptors1, descriptors2)
     matches = sorted(matches, key=lambda x: x.distance)
@@ -52,15 +52,27 @@ class Matcher(ABC):
 
 class Match:
     """
-    Adapter to use the cv2 library
+    Class to represent a match between to descriptors.
     """
-    def __init__(self, imgIdx, queryIdx, trainIdx, distance):
-        self.imgIdx = imgIdx
-        self.queryIdx = queryIdx
-        self.trainIdx = trainIdx
+    def __init__(self, img_idx: int, query_idx: int, train_idx: int, distance: float):
+        self.img_idx = img_idx
+        self.query_idx = query_idx
+        self.train_idx = train_idx
         self.distance = distance
 
-    # TODO: hacer un maper, actualmente no anda la parte de dibujar por enviar esta clase
+
+class MatchAdapter:
+    """
+    Adapter to use the cv2 library.
+    """
+
+    @staticmethod
+    def adapt(match: Match) -> cv2.DMatch:
+        return cv2.DMatch(match.query_idx, match.train_idx, match.img_idx, match.distance)
+
+    @staticmethod
+    def adapt_all(matches: List) -> List:
+        return [MatchAdapter.adapt(x) for x in matches]
 
 
 class L2Matcher(Matcher):
@@ -73,7 +85,8 @@ class L2Matcher(Matcher):
         matches_idx = matches_2d.argmin(axis=0)
         matches_dist = matches_2d.min(axis=0)
 
-        return [Match(0, i, idx, dist) for i, (idx, dist) in enumerate(zip(matches_idx, matches_dist))]
+        return MatchAdapter.adapt_all([Match(0, i, idx, dist)
+                                       for i, (idx, dist) in enumerate(zip(matches_idx, matches_dist))])
 
 """
 
