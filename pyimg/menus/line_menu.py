@@ -1,7 +1,9 @@
 from tkinter import Menu
 
-from pyimg.menus.operation_interface import (UnaryWithParamsAndRegionOperation,
-                                             UnaryWithParamsImageOperation)
+from pyimg.menus.operation_interface import (
+    UnaryWithParamsAndRegionOperation,
+    UnaryWithParamsImageOperation,
+)
 from pyimg.menus.point_operators import display_linear_adj_image_wrapper
 from pyimg.models.image import line_detection
 

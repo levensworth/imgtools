@@ -6,15 +6,25 @@ from pyimg.menus.point_operators import display_linear_adj_image_wrapper
 from pyimg.models.image import ImageImpl, object_recognition
 
 
-def display_result(image: ImageImpl, acepted: bool, descriptors1_qty: int, descriptors2_qty: int, matches_qty: int):
+def display_result(
+    image: ImageImpl,
+    acepted: bool,
+    descriptors1_qty: int,
+    descriptors2_qty: int,
+    matches_qty: int,
+):
     display_linear_adj_image_wrapper(image)
 
     text_window = tk.Tk()
     message = tk.Text(text_window, height=5, width=50, font=("Helvetica", 20))
     message.pack()
 
-    text = "Results:\nQuantity of descriptors in image one: {}\nQuantity of descriptors in image two: {}\n" \
-           "Quantity matched descriptors: {}\n".format(descriptors1_qty, descriptors2_qty, matches_qty)
+    text = (
+        "Results:\nQuantity of descriptors in image one: {}\nQuantity of descriptors in image two: {}\n"
+        "Quantity matched descriptors: {}\n".format(
+            descriptors1_qty, descriptors2_qty, matches_qty
+        )
+    )
 
     if acepted:
         text += "Conclusion: They are the same image.\n"
@@ -41,9 +51,10 @@ class ObjectRecognitionMenu:
                 image_io,
                 "Apply",
                 lambda image1, image2, threshold, acceptance: display_result(
-                    *object_recognition.compare_images_sift(image1, image2, threshold, acceptance)
+                    *object_recognition.compare_images_sift(
+                        image1, image2, threshold, acceptance
+                    )
                 ),
                 params=["threshold", "acceptance"],
             ).generate_interface,
         )
-

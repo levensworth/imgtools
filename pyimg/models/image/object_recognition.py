@@ -3,6 +3,9 @@ from typing import List
 
 import cv2
 import numpy as np
+from numpy import dot
+from numpy.linalg import norm
+from scipy.spatial import distance
 
 from pyimg.models.image import ImageImpl
 
@@ -16,32 +19,43 @@ def sift_method(a_img: ImageImpl) -> (ImageImpl, List, List):
     return gray_image, key_points, descriptors
 
 
-def compare_images_sift(img1: ImageImpl, img2: ImageImpl, threshold, acceptance
-                        ) -> (ImageImpl, bool, int, int, int):
+def compare_images_sift(
+    img1: ImageImpl, img2: ImageImpl, threshold, acceptance
+) -> (ImageImpl, bool, int, int, int):
     gray1, key_points1, descriptors1 = sift_method(img1)
     gray2, key_points2, descriptors2 = sift_method(img2)
 
-    bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
-    #bf = L2Matcher()
+    # bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
+    bf = ChebyshevDistance()
 
     matches = bf.match(descriptors1, descriptors2)
     matches = sorted(matches, key=lambda x: x.distance)
 
     matches_qty = (np.array([x.distance for x in matches]) <= threshold).sum()
 
-    matching_image = cv2.drawMatches(img1.get_array(), key_points1, img2.get_array(), key_points2,
-                                     matches[:matches_qty],
-                                     img2.get_array(), flags=2)
+    matching_image = cv2.drawMatches(
+        img1.get_array(),
+        key_points1,
+        img2.get_array(),
+        key_points2,
+        matches[:matches_qty],
+        img2.get_array(),
+        flags=2,
+    )
 
     min_dimension = min(len(descriptors1), len(descriptors2))
     matching_percentage = matches_qty / min_dimension
 
-    return (ImageImpl.from_array(matching_image), matching_percentage >= acceptance, len(descriptors1),
-            len(descriptors2), matches_qty)
+    return (
+        ImageImpl.from_array(matching_image),
+        matching_percentage >= acceptance,
+        len(descriptors1),
+        len(descriptors2),
+        matches_qty,
+    )
 
 
 class Matcher(ABC):
-
     @abstractmethod
     def match(self, query_descriptors, train_descriptors) -> List:
         """
@@ -54,6 +68,7 @@ class Match:
     """
     Class to represent a match between to descriptors.
     """
+
     def __init__(self, img_idx: int, query_idx: int, train_idx: int, distance: float):
         self.img_idx = img_idx
         self.query_idx = query_idx
@@ -68,7 +83,9 @@ class MatchAdapter:
 
     @staticmethod
     def adapt(match: Match) -> cv2.DMatch:
-        return cv2.DMatch(match.query_idx, match.train_idx, match.img_idx, match.distance)
+        return cv2.DMatch(
+            match.query_idx, match.train_idx, match.img_idx, match.distance
+        )
 
     @staticmethod
     def adapt_all(matches: List) -> List:
@@ -76,7 +93,6 @@ class MatchAdapter:
 
 
 class L2Matcher(Matcher):
-
     def match(self, query, train):
         query_expand = np.array([query] * train.shape[0])
         train_expand = np.array([train] * query.shape[0]).transpose(1, 0, 2)
@@ -85,8 +101,74 @@ class L2Matcher(Matcher):
         matches_idx = matches_2d.argmin(axis=0)
         matches_dist = matches_2d.min(axis=0)
 
-        return MatchAdapter.adapt_all([Match(0, i, idx, dist)
-                                       for i, (idx, dist) in enumerate(zip(matches_idx, matches_dist))])
+        return MatchAdapter.adapt_all(
+            [
+                Match(0, i, idx, dist)
+                for i, (idx, dist) in enumerate(zip(matches_idx, matches_dist))
+            ]
+        )
+
+
+# TODO: revisar
+class CosineMatcher(Matcher):
+    def match(self, query, train):
+        matches = []
+        for i, d1 in enumerate(query):
+            match = np.array([dot(d1, d2.T) / (norm(d1) * norm(d2)) for d2 in train])
+            min_idx = match.argmin()
+            matches.append(Match(0, i, min_idx, match[min_idx]))
+
+        # return MatchAdapter.adapt_all([Match(0, i, idx, dist)
+        #                                for i, (idx, dist) in enumerate(zip(matches_idx, matches_dist))])
+        return MatchAdapter.adapt_all(matches)
+
+
+class ManhattanDistance(Matcher):
+    def match(self, query, train):
+        query_expand = np.array([query] * train.shape[0])
+        train_expand = np.array([train] * query.shape[0]).transpose(1, 0, 2)
+
+        matches_2d = np.linalg.norm(query_expand - train_expand, axis=2, ord=1)
+        matches_idx = matches_2d.argmin(axis=0)
+        matches_dist = matches_2d.min(axis=0)
+
+        return MatchAdapter.adapt_all(
+            [
+                Match(0, i, idx, dist)
+                for i, (idx, dist) in enumerate(zip(matches_idx, matches_dist))
+            ]
+        )
+
+
+class MinkowskiDistance(Matcher):
+    def match(self, query, train):
+        matches = []
+        for i, d1 in enumerate(query):
+            match = np.array([distance.minkowski(d1, d2) for d2 in train])
+            min_idx = match.argmin()
+            matches.append(Match(0, i, min_idx, match[min_idx]))
+
+        # return MatchAdapter.adapt_all([Match(0, i, idx, dist)
+        #                                for i, (idx, dist) in enumerate(zip(matches_idx, matches_dist))])
+        return MatchAdapter.adapt_all(matches)
+
+
+class ChebyshevDistance(Matcher):
+    def match(self, query, train):
+        query_expand = np.array([query] * train.shape[0])
+        train_expand = np.array([train] * query.shape[0]).transpose(1, 0, 2)
+
+        matches_2d = np.linalg.norm(query_expand - train_expand, axis=2, ord=np.inf)
+        matches_idx = matches_2d.argmin(axis=0)
+        matches_dist = matches_2d.min(axis=0)
+
+        return MatchAdapter.adapt_all(
+            [
+                Match(0, i, idx, dist)
+                for i, (idx, dist) in enumerate(zip(matches_idx, matches_dist))
+            ]
+        )
+
 
 """
 
@@ -153,4 +235,3 @@ nd2
 
 norm(query_expand - train_expand, axis=2) es de shape (n_descriptors1, n_descriptors2)
 """
-

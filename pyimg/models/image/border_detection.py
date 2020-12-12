@@ -283,8 +283,13 @@ def _calculate_c_for_susan(matrix, threshold):
         return 1 - v / 37
 
 
-def harris_detection(a_img: ImageImpl, threshold: int, k: float = 0.04,
-                     kernel_size: int = 7, sigma: float = 2) -> ImageImpl:
+def harris_detection(
+    a_img: ImageImpl,
+    threshold: int,
+    k: float = 0.04,
+    kernel_size: int = 7,
+    sigma: float = 2,
+) -> ImageImpl:
 
     gray_image = a_img.to_gray()
 
@@ -293,8 +298,12 @@ def harris_detection(a_img: ImageImpl, threshold: int, k: float = 0.04,
     horizontal_image = border_images[1]
     vertical_image = border_images[2]
 
-    ix_squared = gaussian_filter_fast(horizontal_image.mul(horizontal_image), kernel_size, sigma)
-    iy_squared = gaussian_filter_fast(vertical_image.mul(vertical_image), kernel_size, sigma)
+    ix_squared = gaussian_filter_fast(
+        horizontal_image.mul(horizontal_image), kernel_size, sigma
+    )
+    iy_squared = gaussian_filter_fast(
+        vertical_image.mul(vertical_image), kernel_size, sigma
+    )
 
     ixy = gaussian_filter_fast(horizontal_image.mul(vertical_image), kernel_size, sigma)
     ixy_squared = ixy.mul(ixy)

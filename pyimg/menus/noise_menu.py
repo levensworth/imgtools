@@ -5,9 +5,12 @@ from tkinter import Menu, messagebox
 from pyimg.config import constants
 from pyimg.menus.operation_interface import UnaryWithBoolParamsOperation
 from pyimg.models.image import ImageImpl, noise, operators
-from pyimg.models.random_number.generator import (ExponentialGenerator,
-                                                  GaussianGenerator, Generator,
-                                                  RayleighGenerator)
+from pyimg.models.random_number.generator import (
+    ExponentialGenerator,
+    GaussianGenerator,
+    Generator,
+    RayleighGenerator,
+)
 from pyimg.modules.image_io import display_img, save_img
 
 

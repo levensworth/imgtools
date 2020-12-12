@@ -1,12 +1,13 @@
 from tkinter import Menu
 
-from pyimg.menus.operation_interface import (BinaryImageOperation,
-                                             UnaryImageOperation,
-                                             UnaryWithBoolParamsOperation,
-                                             UnaryWithParamsImageOperation)
+from pyimg.menus.operation_interface import (
+    BinaryImageOperation,
+    UnaryImageOperation,
+    UnaryWithBoolParamsOperation,
+    UnaryWithParamsImageOperation,
+)
 from pyimg.menus.point_operators import display_linear_adj_image_wrapper
-from pyimg.models.image import (border_detection,
-                                multi_direction_border_detection)
+from pyimg.models.image import border_detection, multi_direction_border_detection
 
 
 class BorderMenu:
@@ -162,11 +163,7 @@ class BorderMenu:
                 "Harris",
                 lambda image, threshold, k, kernel_size, sigma: display_linear_adj_image_wrapper(
                     border_detection.harris_detection(
-                        image,
-                        threshold,
-                        k,
-                        kernel_size,
-                        sigma
+                        image, threshold, k, kernel_size, sigma
                     )
                 ),
                 params=["threshold", "k", "kernel_size", "sigma"],

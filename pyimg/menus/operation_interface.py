@@ -202,7 +202,9 @@ class BinaryImageOperation(ImageOperation):
 
 class BinaryWithParamsImageOperation(BinaryImageOperation):
     def __init__(self, image_io: ImageIO, button_text: str, func, params):
-        super(BinaryWithParamsImageOperation, self).__init__(image_io, button_text, func)
+        super(BinaryWithParamsImageOperation, self).__init__(
+            image_io, button_text, func
+        )
         self.params = params
         for param in self.params:
             self.add_button_input(param)
@@ -216,7 +218,9 @@ class BinaryWithParamsImageOperation(BinaryImageOperation):
     def command_apply(self):
         if self.is_ready():
             image1, image2 = self.image_input.get_input()
-            return self.func(**{**{"image1": image1, "image2": image2}, **self.get_params()})
+            return self.func(
+                **{**{"image1": image1, "image2": image2}, **self.get_params()}
+            )
         else:
             messagebox.showerror(
                 title="Error",
