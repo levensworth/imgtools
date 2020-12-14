@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Menu
 
-from pyimg.menus.operation_interface import BinaryWithParamsImageOperation
+from pyimg.menus.operation_interface import BinaryWithBoolAndStringParamsOperation
 from pyimg.menus.point_operators import display_linear_adj_image_wrapper
 from pyimg.models.image import ImageImpl, object_recognition
 
@@ -12,17 +12,23 @@ def display_result(
     descriptors1_qty: int,
     descriptors2_qty: int,
     matches_qty: int,
+    matches_mean: float,
+    matches_std: float,
 ):
     display_linear_adj_image_wrapper(image)
 
     text_window = tk.Tk()
-    message = tk.Text(text_window, height=5, width=50, font=("Helvetica", 20))
+    message = tk.Text(text_window, height=7, width=100, font=("Helvetica", 20))
     message.pack()
 
     text = (
-        "Results:\nQuantity of descriptors in image one: {}\nQuantity of descriptors in image two: {}\n"
-        "Quantity matched descriptors: {}\n".format(
-            descriptors1_qty, descriptors2_qty, matches_qty
+        "Results:\nQuantity of descriptors in image one: {}\n"
+        "Quantity of descriptors in image two: {}\n"
+        "Quantity matched descriptors: {}\n"
+        "Mean of all normalized valid distances between descriptors: {:.3f} (0 is when a descriptor is more similar to "
+        "another)\n"
+        "Standard deviation of all normalized valid distances between descriptors: {:.3f}\n".format(
+            descriptors1_qty, descriptors2_qty, matches_qty, matches_mean, matches_std
         )
     )
 
@@ -47,14 +53,19 @@ class ObjectRecognitionMenu:
 
         filter_menu.add_command(
             label="SIFT",
-            command=BinaryWithParamsImageOperation(
+            command=BinaryWithBoolAndStringParamsOperation(
                 image_io,
                 "Apply",
-                lambda image1, image2, threshold, acceptance: display_result(
+                lambda image1, image2, threshold, acceptance, similarity, validate_second_min,
+                       validate_second_threshold:
+                display_result(
                     *object_recognition.compare_images_sift(
-                        image1, image2, threshold, acceptance
+                        image1, image2, threshold, acceptance, similarity, validate_second_min,
+                        validate_second_threshold
                     )
                 ),
-                params=["threshold", "acceptance"],
+                params=["threshold", "acceptance", "validate_second_threshold"],
+                bool_params=[("validate_second_min", "not_validate_second_min")],
+                str_params=["similarity"],
             ).generate_interface,
         )

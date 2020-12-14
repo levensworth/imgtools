@@ -226,3 +226,33 @@ class BinaryWithParamsImageOperation(BinaryImageOperation):
                 title="Error",
                 message="You need to upload tho images for this operation and set the parameters.",
             )
+
+
+class BinaryWithBoolParamsOperation(BinaryWithParamsImageOperation):
+    def __init__(self, image_io: ImageIO, button_text: str, func, params, bool_params):
+        super(BinaryWithBoolParamsOperation, self).__init__(
+            image_io, button_text, func, params
+        )
+        self.bool_params = bool_params
+        self.params = self.params + self.bool_params
+
+        for param in self.bool_params:
+            self.add_radio_button_input(param)
+
+
+class BinaryWithBoolAndStringParamsOperation(BinaryWithBoolParamsOperation):
+    def __init__(self, image_io: ImageIO, button_text: str, func, params, bool_params, str_params):
+        super(BinaryWithBoolAndStringParamsOperation, self).__init__(
+            image_io, button_text, func, params + str_params, bool_params
+        )
+        self.str_params = str_params
+
+    def get_params(self):
+        return {
+            **{
+                k: float(v.get()) if k not in self.str_params else v.get()
+                for k, v in self.extra_params.items()
+                if self.extra_params[k].get() != ""
+            },
+            **{k[0]: float(v.get()) for k, v in self.extra_bool_params.items()},
+        }
