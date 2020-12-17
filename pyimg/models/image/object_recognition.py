@@ -31,8 +31,15 @@ def compare_images_sift(
     matches = sorted(matches, key=lambda x: x.get_distance())
     matches_dist = np.array([x.distance for x in matches if x.valid])
 
-    matches_norm = (matches_dist - matches_dist.min()) / (matches_dist.max() - matches_dist.min())
-    matches_qty = (matches_norm < threshold).sum()
+    if len(matches_dist) != 0:
+        if matches_dist.max() == matches_dist.min():
+            matches_norm = matches_dist - matches_dist.min()
+        else:
+            matches_norm = (matches_dist - matches_dist.min()) / (matches_dist.max() - matches_dist.min())
+        matches_qty = (matches_norm < threshold).sum()
+    else:
+        matches_norm = np.array([])
+        matches_qty = 0
 
     matching_image = cv2.drawMatches(
         img1.get_array(),
