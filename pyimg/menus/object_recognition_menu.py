@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import Menu
 
+from pyimg.menus.auto_object_recognition_menu import automated_result
 from pyimg.menus.operation_interface import BinaryWithBoolAndStringParamsOperation
 from pyimg.menus.point_operators import display_linear_adj_image_wrapper
 from pyimg.models.image import ImageImpl, object_recognition
@@ -67,5 +68,23 @@ class ObjectRecognitionMenu:
                 params=["threshold", "acceptance", "validate_second_threshold"],
                 bool_params=[("validate_second_min", "not_validate_second_min")],
                 str_params=["similarity"],
+            ).generate_interface,
+        )
+
+        filter_menu.add_command(
+            label="Automated SIFT",
+            command=BinaryWithBoolAndStringParamsOperation(
+                image_io,
+                "Apply",
+                lambda image1, image2, threshold, transform_type, validate_second_min,
+                       validate_second_threshold:
+                automated_result(
+                    image1, image2, threshold, transform_type, validate_second_min,
+                    validate_second_threshold
+                )
+                ,
+                params=["threshold", "validate_second_threshold"],
+                bool_params=[("validate_second_min", "not_validate_second_min")],
+                str_params=["transform_type"],
             ).generate_interface,
         )
