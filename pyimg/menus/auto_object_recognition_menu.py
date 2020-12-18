@@ -19,6 +19,14 @@ def get_result(
     return matches_qty / min(descriptors1_qty, descriptors2_qty)
 
 
+def adjust_gamma(image: ImageImpl, gamma: Union[float, int]) -> ImageImpl:
+    invGamma = 1.0 / gamma
+    table = np.array([
+      ((i / 255.0) ** invGamma) * 255
+      for i in np.arange(0, 256)])
+    return ImageImpl.from_array(cv2.LUT(image.array.astype(np.uint8), table.astype(np.uint8)))
+
+
 def scale_transform(image: ImageImpl, scale: Union[float, int]) -> ImageImpl:
     """ Resize an image maintaining its proportions
 
@@ -62,7 +70,7 @@ def automated_result(
     similarities_names = ['Manhattan', 'Euclidean', 'Chebyshev', 'Cosine']
     similarities_color = ['r', 'g', 'b', 'y']
 
-    illumination_range = range(-30, 30, 5)
+    illumination_range = [x * 0.2 for x in range(1, 12)]
     scaling_range = [x * 0.1 for x in range(5, 15)]
     rotation_range = range(0, 330, 30)
     gaussian_range = [x * 0.1 for x in range(1, 9)]
@@ -72,7 +80,7 @@ def automated_result(
 
     if transform_type == 'i':
         transform_range = illumination_range
-        transform_func = ImageImpl.add_scalar
+        transform_func = adjust_gamma
         plt.xlabel("Illumination variation")
     elif transform_type == 's':
         transform_range = scaling_range
