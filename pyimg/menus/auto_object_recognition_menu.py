@@ -7,6 +7,7 @@ from pyimg.models.image import ImageImpl, object_recognition
 from pyimg.models.image.noise import apply_noise
 from pyimg.models.random_number.generator import GaussianGenerator
 
+
 def get_result(
     image: ImageImpl,
     acepted: bool,
@@ -16,7 +17,7 @@ def get_result(
     matches_mean: float,
     matches_std: float,
 ):
-    return matches_qty / min(descriptors1_qty, descriptors2_qty)
+    return matches_qty / descriptors1_qty
 
 
 def adjust_gamma(image: ImageImpl, gamma: Union[float, int]) -> ImageImpl:
@@ -112,7 +113,7 @@ def automated_result(
         plt.plot(transform_range, percentages, 'o-', color=color, label=name)
 
 
-    ax.set_yticks(np.arange(0, 1., 0.1))
+    ax.set_yticks(np.arange(0, 1.1, 0.1))
     vals = ax.get_yticks()
     ax.set_yticklabels(['{:,.0%}'.format(x) for x in vals])
     plt.legend()

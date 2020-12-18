@@ -72,12 +72,18 @@ class Match:
     Class to represent a match between to descriptors.
     """
 
+    EPSILON = 0.0001
+
     def __init__(self, img_idx: int, d1_idx: int, d2_idx: int, distance: float, valid: bool = True):
         self.img_idx = img_idx
         self.d1_idx = d1_idx
         self.d2_idx = d2_idx
-        self.distance = distance
         self.valid = valid
+        self.distance = distance
+        if abs(distance) < Match.EPSILON:
+            self.distance = 0
+        if self.distance < 0:
+            ValueError('Invalid negative distance.')
 
     def get_distance(self):
         return self.distance if self.valid else math.inf
