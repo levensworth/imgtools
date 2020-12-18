@@ -34,6 +34,8 @@ def compare_images_sift(
     if len(matches_dist) != 0:
         if matches_dist.max() == matches_dist.min():
             matches_norm = matches_dist - matches_dist.min()
+        elif matches_dist.max() <= 1:
+            matches_norm = matches_dist
         else:
             matches_norm = (matches_dist - matches_dist.min()) / (matches_dist.max() - matches_dist.min())
         matches_qty = (matches_norm < threshold).sum()

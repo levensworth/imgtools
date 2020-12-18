@@ -4,7 +4,8 @@ import cv2
 import numpy as np
 
 from pyimg.models.image import ImageImpl, object_recognition
-
+from pyimg.models.image.noise import apply_noise
+from pyimg.models.random_number.generator import GaussianGenerator
 
 def get_result(
     image: ImageImpl,
@@ -44,6 +45,10 @@ def rotate_transform(image: ImageImpl, angle: Union[float, int]) -> ImageImpl:
     return ImageImpl.from_array(result)
 
 
+def gaussian_transform(image: ImageImpl, threshold: Union[float, int]) -> ImageImpl:
+    return apply_noise(image, GaussianGenerator(mean=100, std=20, size=image.array.size), True, threshold)
+
+
 def automated_result(
     image1: ImageImpl,
     image2: ImageImpl,
@@ -60,6 +65,7 @@ def automated_result(
     illumination_range = range(-30, 30, 5)
     scaling_range = [x * 0.1 for x in range(5, 15)]
     rotation_range = range(0, 330, 30)
+    gaussian_range = [x * 0.1 for x in range(1, 9)]
 
     fig = plt.figure()
     plt.ylabel("Percentage of key-point matched")
@@ -76,10 +82,16 @@ def automated_result(
         transform_range = rotation_range
         transform_func = rotate_transform
         plt.xlabel("Angle of rotation")
+    elif transform_type == 'n':
+        transform_range = gaussian_range
+        transform_func = gaussian_transform
+        plt.xlabel("Sigma for Gaussian Additive noise")
     else:
         return
 
     percentages_lists = []
+    plt.grid(True)
+    ax = fig.gca()
     for similarity in similarities:
         percentages_lists.append([])
         for transform in transform_range:
@@ -91,11 +103,10 @@ def automated_result(
     for percentages, name, color, in zip(percentages_lists, similarities_names, similarities_color):
         plt.plot(transform_range, percentages, 'o-', color=color, label=name)
 
-    plt.grid(True)
-    ax = fig.gca()
+
     ax.set_yticks(np.arange(0, 1., 0.1))
     vals = ax.get_yticks()
     ax.set_yticklabels(['{:,.0%}'.format(x) for x in vals])
-
+    plt.legend()
     plt.show()
 
